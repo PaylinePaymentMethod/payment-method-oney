@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class OneyResponse extends OneyBean {
 
-    private static final Logger logger = LogManager.getLogger(OneyRequest.class);
+    private static final Logger LOGGER = LogManager.getLogger(OneyRequest.class);
 
     @SerializedName("encrypted_message")
     protected String encryptedMessage;
@@ -30,7 +30,7 @@ public abstract class OneyResponse extends OneyBean {
      */
     public static String decryptMessage(String toDecrypt, String key) throws DecryptException {
         if (toDecrypt == null || toDecrypt.equals("")) {
-            logger.error("Message to decrypt is empty");
+            LOGGER.error("Message to decrypt is empty");
             return "";
         }
 

@@ -12,8 +12,8 @@ apply plugin: 'maven-publish'
 apply plugin: 'java-library'
 apply plugin: 'jacoco'
 
-//apply from: "monext.gradle"
-apply from: "external.gradle"
+apply from: "monext.gradle"
+//apply from: "external.gradle"
 
 description = 'payment-method-oney'
 group = 'com.payline.payment.oney'

@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 public abstract class OneyRequest extends OneyBean {
     //Construit une requête Oney
 
-    private static final Logger logger = LogManager.getLogger(OneyRequest.class);
+    private static final Logger LOGGER = LogManager.getLogger(OneyRequest.class);
     @SerializedName("merchant_guid")
     protected String merchantGuid;
     @SerializedName("psp_guid")
@@ -44,7 +44,7 @@ public abstract class OneyRequest extends OneyBean {
      */
     public static String encryptMessage(String toEncrypt, String key) throws DecryptException {
         if (toEncrypt == null) {
-            logger.info("Message to encrypt is empty");
+            LOGGER.info("Message to encrypt is empty");
             toEncrypt = "";
         }
 

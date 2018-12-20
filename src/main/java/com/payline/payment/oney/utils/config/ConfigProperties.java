@@ -11,7 +11,7 @@ import java.util.Properties;
  */
 public class ConfigProperties {
 
-    private static final Logger logger = LogManager.getLogger(ConfigProperties.class);
+    private static final Logger LOGGER = LogManager.getLogger(ConfigProperties.class);
 
     private static final String FILENAME = "config.properties";
 
@@ -30,7 +30,7 @@ public class ConfigProperties {
      */
     public static String get(String key) {
         if (properties == null) {
-            logger.error("Property " + key + " doesn't exist");
+            LOGGER.error("Property " + key + " doesn't exist");
             readProperties();
 
         }
@@ -65,7 +65,7 @@ public class ConfigProperties {
             properties.load(inputStream);
 
         } catch (Exception e) {
-            logger.error("An error occurred reading the configuration properties file {}", e.getMessage(), e);
+            LOGGER.error("An error occurred reading the configuration properties file {}", e.getMessage(), e);
         }
 
     }

@@ -70,30 +70,39 @@ public class PluginUtils {
 
     public static Integer getHonorificCode(String civility) {
 
-        //fixme verifier le nom des champs  renvoyés par Payline
-
+        if (civility == null) {
+            return null;
+        }
         switch (civility.toLowerCase()) {
-            case "unknow":
+            //Inconnu ex : professeu, Maitre, docteur
+            case "7":
+            case "9":
+            case "10":
+            case "11":
                 return 0;
-            case "mr":
-            case "m":
+            //MR
+            case "4":
+            case "5":
                 return 1;
-            case "mrs":
-            case "mme":
-            case "f":
+            //MME
+            case "1":
+            case "2":
+            case "6":
                 return 2;
-            case "mlle":
-            case "ms":
+            //MLLE
+            case "3":
                 return 3;
             default:
                 return 1;
         }
     }
 
-    public static int getOneyDeliveryModeCode(String paylineCode) {
+    public static Integer getOneyDeliveryModeCode(String paylineCode) {
 
+        if (paylineCode == null) {
+            return null;
+        }
         switch (paylineCode) {
-
 
             // "Collection of the goods in the merchant store":
             case "1":
@@ -101,13 +110,13 @@ public class PluginUtils {
             // "Collection in a third party point":
             case "2":
                 return 2;
-           // case "Collection in an airport, train station or travel agency":
+            // case "Collection in an airport, train station or travel agency":
             case "3":
                 return 3;
-         //  case "Carrier (La Poste, Colissimo, UPS, DHL...or any private carrier)":
+            //  case "Carrier (La Poste, Colissimo, UPS, DHL...or any private carrier)":
             case "4":
                 return 4;
-        //  case "Electronic ticket":
+            //  case "Electronic ticket":
             case "5":
                 return 5;
 
@@ -117,17 +126,21 @@ public class PluginUtils {
         }
     }
 
-    public static int getOneyDeliveryOption(String paylineCode) {
+    public static Integer getOneyDeliveryOption(String paylineCode) {
 
-        //fixme definir le nom des champs  renvoyés par Payline
+        if (paylineCode == null) {
+            return null;
+        }
         switch (paylineCode.toLowerCase()) {
-          //  cas "Express (< 24 hours)":
-            case "express":
+            //  cas "Express'
+            case "1":
                 return 1;
-            case "standard":
+            //standard
+            case "2":
                 return 2;
-            case "priority":
-                return 3;
+                //non gere par Payline a ce jour
+//            case "priority":
+//                return 3;
             default:
                 return 2;
 
@@ -156,8 +169,11 @@ public class PluginUtils {
         int firstCharPosition = 0;
         int firstCharPosition2 = 0;
 
+        if (longText == null) {
+            textTruncated.put("line1", "");
+        }
         //-------------------- address 1
-        if (longText.length() < size) {
+        else if (longText.length() < size) {
             textTruncated.put("line1", longText);
 
         } else {
@@ -178,7 +194,10 @@ public class PluginUtils {
             textTruncated.put("line3", line3);
         }
         //-------------------- address 2
-        if (longText2.length() < size) {
+        if (longText2 == null) {
+            textTruncated.put("line4", "");
+
+        } else if (longText2.length() < size) {
             textTruncated.put("line4", longText2);
 
         } else {

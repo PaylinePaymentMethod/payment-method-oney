@@ -95,9 +95,9 @@ public class PluginUtilsTest {
 
     @Test
     public void testDeliveryOption() {
-        String mode1 = "Express";
-        String mode2 = "Strandard";
-        String mode3 = "inconnu";
+        String mode1 = "1";
+        String mode2 = "2";
+        String mode3 = "17";
         int catCodeOney = getOneyDeliveryOption(mode1);
         int catCodeOney2 = getOneyDeliveryOption(mode2);
         int catCodeOney3 = getOneyDeliveryOption(mode3);
@@ -110,9 +110,9 @@ public class PluginUtilsTest {
     //todo
     @Test
     public void testHonorificName() {
-        String mr = "M";
-        String mme = "F";
-        String miss = "Ms";
+        String mr = "4";
+        String mme = "1";
+        String miss = "3";
         int hCodeOney = getHonorificCode(mr);
         int hCodeOney2 = getHonorificCode(mme);
         int hCodeOney3 = getHonorificCode(miss);

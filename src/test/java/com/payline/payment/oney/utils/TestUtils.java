@@ -229,7 +229,7 @@ public class TestUtils {
                 .withDate(new Date())
                 .withItems(orderItems)
                 .withDeliveryMode("1")
-                .withDeliveryTime("express")
+                .withDeliveryTime("2")
                 .withExpectedDeliveryDate(new Date())
                 .build();
     }
@@ -252,7 +252,7 @@ public class TestUtils {
 
 
     public static Buyer.FullName createFullName() {
-        return new Buyer.FullName("Robin", "Hood", "Mr");
+        return new Buyer.FullName("Robinho", "Hoodyle", "4");
     }
 
     public static Map<Buyer.PhoneNumberType, String> createDefaultPhoneNumbers() {

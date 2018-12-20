@@ -12,7 +12,7 @@ import static com.payline.payment.oney.utils.OneyConstants.RESOURCE_BUNDLE_BASE_
 
 public class I18nService {
 
-    private static final Logger logger = LogManager.getLogger(I18nService.class);
+    private static final Logger LOGGER = LogManager.getLogger(I18nService.class);
 
     /**
      * Private constructor
@@ -43,7 +43,7 @@ public class I18nService {
         try {
             return messages.getString(key);
         } catch (MissingResourceException e) {
-            logger.error("Trying to get a message with a key that does not exist: " + key + " (language: " + locale.getLanguage() + ")");
+            LOGGER.error("Trying to get a message with a key that does not exist: " + key + " (language: " + locale.getLanguage() + ")");
             return "???" + locale + "." + key + "???";
         }
     }

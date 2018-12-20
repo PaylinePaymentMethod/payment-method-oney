@@ -139,9 +139,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         try {
             props.load(ConfigurationServiceImpl.class.getClassLoader().getResourceAsStream("release.properties"));
         } catch (IOException e) {
-            LOGGER.error("An error occurred reading the file: release.properties");
-            props.setProperty("release.version", "unknown");
-            props.setProperty("release.date", "01/01/1900");
+            final String message = "An error occurred reading the file: release.properties";
+            LOGGER.error(message);
+            throw new RuntimeException(message, e);
         }
 
         LocalDate date = LocalDate.parse(props.getProperty("release.date"), DateTimeFormatter.ofPattern(RELEASE_DATE_FORMAT));

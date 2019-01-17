@@ -1,16 +1,17 @@
-package com.payline.payment.oney.service.impl.request;
+package com.payline.payment.oney.bean.request;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyBean;
 import com.payline.payment.oney.exception.DecryptException;
-
-import static com.payline.payment.oney.utils.OneyConstants.CHIFFREMENT_KEY;
 
 public class OneyEncryptedRequest extends OneyBean {
     @SerializedName("merchant_guid")
     protected String merchantGuid;
     @SerializedName("psp_guid")
     protected String pspGuid;
+
+    @Expose
     @SerializedName("encrypted_message")
     protected String encryptedMessage;
 
@@ -42,8 +43,6 @@ public class OneyEncryptedRequest extends OneyBean {
     public static OneyEncryptedRequest fromOneyConfirmRequest(OneyConfirmRequest request) throws DecryptException {
         OneyEncryptedRequest encryptedRequest = new OneyEncryptedRequest();
         encryptedRequest.encryptedMessage = OneyRequest.encryptMessage(request.toString(), request.getEncryptKey());
-        encryptedRequest.pspGuid = request.pspGuid;
-        encryptedRequest.merchantGuid = request.merchantGuid;
 
         return encryptedRequest;
     }

@@ -1,10 +1,11 @@
 package com.payline.payment.oney.utils;
 
-import com.payline.payment.oney.bean.common.enums.PaymentType;
 import com.payline.payment.oney.bean.common.purchase.Item;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
+import java.util.Currency;
 import java.util.Map;
 
 import static com.payline.payment.oney.bean.common.enums.CategoryCodeHandler.findCategory;
@@ -107,7 +108,6 @@ public class PluginUtilsTest {
         Assertions.assertEquals(2, catCodeOney3);
     }
 
-    //todo
     @Test
     public void testHonorificName() {
         String mr = "4";
@@ -123,4 +123,77 @@ public class PluginUtilsTest {
 
     }
 
+    @Test
+    public void createStringAmount() {
+        BigInteger int1 = BigInteger.ZERO;
+        BigInteger int2 = BigInteger.ONE;
+        BigInteger int3 = BigInteger.TEN;
+        BigInteger int4 = BigInteger.valueOf(100);
+        BigInteger int5 = BigInteger.valueOf(1000);
+
+        Assertions.assertEquals("0.00", PluginUtils.createStringAmount(int1,Currency.getInstance("EUR")));
+        Assertions.assertEquals("0.01", PluginUtils.createStringAmount(int2,Currency.getInstance("EUR")));
+        Assertions.assertEquals("0.10", PluginUtils.createStringAmount(int3,Currency.getInstance("EUR")));
+        Assertions.assertEquals("1.00", PluginUtils.createStringAmount(int4,Currency.getInstance("EUR")));
+        Assertions.assertEquals("10.00", PluginUtils.createStringAmount(int5,Currency.getInstance("EUR")));
+    }
+
+    @Test
+    public void createFloatAmount() {
+        BigInteger int1 = BigInteger.ZERO;
+        BigInteger int2 = BigInteger.ONE;
+        BigInteger int3 = BigInteger.TEN;
+        BigInteger int4 = BigInteger.valueOf(100);
+        BigInteger int5 = BigInteger.valueOf(1000);
+
+        Assertions.assertEquals(new Float("00.00"), PluginUtils.createFloatAmount(int1, Currency.getInstance("EUR")));
+        Assertions.assertEquals(new Float("00.01"), PluginUtils.createFloatAmount(int2,Currency.getInstance("EUR")));
+        Assertions.assertEquals(new Float("00.10"), PluginUtils.createFloatAmount(int3,Currency.getInstance("EUR")));
+        Assertions.assertEquals(new Float("1.00"), PluginUtils.createFloatAmount(int4,Currency.getInstance("EUR")));
+        Assertions.assertEquals(new Float("10.00"), PluginUtils.createFloatAmount(int5,Currency.getInstance("EUR")));
+    }
+
+    @Test
+    public void getRefundFlagTrue() {
+        String status = "FUNDED";
+        boolean flag = getRefundFlag(status);
+        Assertions.assertTrue(flag);
+
+    }
+
+    @Test
+    public void getRefundFlagFalse() {
+        String status = "FAVORABLE";
+        String status2 = "PENDING";
+        boolean flag = getRefundFlag(status);
+        boolean flag2 = getRefundFlag(status);
+
+        Assertions.assertFalse(flag);
+        Assertions.assertFalse(flag2);
+
+    }
+
+    @Test
+    public void getRefundFlagInvalid() {
+
+        Throwable exception = Assertions.assertThrows(IllegalStateException.class, () -> {
+
+            String status = "XOXO";
+            boolean flag = getRefundFlag(status);
+        });
+        Assertions.assertEquals("XOXO is not a valid status for refund or cancel", exception.getMessage());
+    }
+
+    @Test
+    public void getRefundFlagNotRefundable() {
+        Throwable exception = Assertions.assertThrows(IllegalStateException.class, () -> {
+
+            String status = "REFUSED";
+            boolean flag = getRefundFlag(status);
+
+        });
+
+        Assertions.assertEquals("a REFUSED transactionStatusRequest can't be cancelled", exception.getMessage());
+
+    }
 }

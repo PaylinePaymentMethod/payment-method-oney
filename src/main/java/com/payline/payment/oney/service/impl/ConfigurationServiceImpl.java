@@ -2,18 +2,16 @@ package com.payline.payment.oney.service.impl;
 
 import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.i18n.I18nService;
+import com.payline.payment.oney.utils.properties.constants.ConfigurationConstants;
+import com.payline.payment.oney.utils.properties.service.ReleasePropertiesEnum;
 import com.payline.pmapi.bean.configuration.ReleaseInformation;
 import com.payline.pmapi.bean.configuration.parameter.AbstractParameter;
 import com.payline.pmapi.bean.configuration.parameter.impl.InputParameter;
 import com.payline.pmapi.bean.configuration.parameter.impl.ListBoxParameter;
-import com.payline.pmapi.bean.configuration.parameter.impl.NetworkListBoxParameter;
 import com.payline.pmapi.bean.configuration.parameter.impl.PasswordParameter;
 import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
 import com.payline.pmapi.service.ConfigurationService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -22,8 +20,6 @@ import static com.payline.payment.oney.utils.OneyConstants.*;
 
 public class ConfigurationServiceImpl implements ConfigurationService {
 
-
-    private static final Logger LOGGER = LogManager.getLogger(ConfigurationServiceImpl.class);
 
     private I18nService i18n = I18nService.getInstance();
 
@@ -77,33 +73,25 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         nbEcheancesParameter.setLabel(this.i18n.getMessage(NB_ECHEANCES_LABEL, locale));
         nbEcheancesParameter.setRequired(true);
         final LinkedHashMap<String, String> nbEcheances = new LinkedHashMap<>();
-        nbEcheances.put("2", "2");
         nbEcheances.put("3", "3");
+        nbEcheances.put("4", "4");
         nbEcheancesParameter.setList(nbEcheances);
         parameters.add(nbEcheancesParameter);
 
-        // X-Oney-Partner-Country-Code
-        final ListBoxParameter codePays = new ListBoxParameter();
+        // X-Oney-Partner-Country-Code ISO 3166-1 alpha-2
+        final InputParameter codePays = new InputParameter();
         codePays.setKey(COUNTRY_CODE_KEY);
         codePays.setLabel(this.i18n.getMessage(COUNTRY_CODE_LABEL, locale));
         codePays.setDescription(COUNTRY_CODE_DESCRIPTION);
-        codePays.setRequired(false);
-        final LinkedHashMap<String, String> partnerCountryCodes = new LinkedHashMap<>();
-        partnerCountryCodes.put("fra", "fra");
-        partnerCountryCodes.put("bel", "bel");
-        codePays.setList(partnerCountryCodes);
+        codePays.setRequired(true);
         parameters.add(codePays);
 
-        //merchant_language_code
-        final ListBoxParameter merchantLanguageCode = new ListBoxParameter();
+        //merchant_language_code ISO 639-1
+        final InputParameter merchantLanguageCode = new InputParameter();
         merchantLanguageCode.setKey(LANGUAGE_CODE_KEY);
         merchantLanguageCode.setLabel(this.i18n.getMessage(LANGUAGE_CODE_LABEL, locale));
         merchantLanguageCode.setDescription(this.i18n.getMessage(LANGUAGE_CODE_DESCRIPTION, locale));
         merchantLanguageCode.setRequired(false);
-        final LinkedHashMap<String, String> languageCodes = new LinkedHashMap<>();
-        languageCodes.put("FR", "FR");
-        languageCodes.put("BE", "BE");
-        merchantLanguageCode.setList(languageCodes);
         parameters.add(merchantLanguageCode);
 
         //X-Oney-International-Partner-ID
@@ -126,7 +114,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         final Map<String, String> accountInfo = contractParametersCheckRequest.getAccountInfo();
         final Map<String, String> errors = new HashMap<>();
 
-        // psp id
+        // apiKey
         final String apiKey = accountInfo.get(X_ONEY_AUTHORIZATION_KEY);
         if (PluginUtils.isEmpty(apiKey)) {
             errors.put(X_ONEY_AUTHORIZATION_KEY, this.i18n.getMessage(X_ONEY_AUTHORIZATION_MESSAGE_ERROR, locale));
@@ -143,30 +131,35 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         if (PluginUtils.isEmpty(merchantGuid)) {
             errors.put(MERCHANT_GUID_KEY, this.i18n.getMessage(MERCHANT_GUID_MESSAGE_ERROR, locale));
         }
+
+        String merchantLanguageCode = contractParametersCheckRequest.getContractConfiguration().getProperty(LANGUAGE_CODE_KEY).getValue();
+        if (!PluginUtils.isISO639(merchantLanguageCode)) {
+            errors.put(LANGUAGE_CODE_KEY, this.i18n.getMessage(LANGUAGE_NOT_ISO, locale));
+        }
+
+        String codePays = contractParametersCheckRequest.getContractConfiguration().getProperty(COUNTRY_CODE_DESCRIPTION).getValue();
+        if (!PluginUtils.isISO3166(codePays)) {
+            errors.put(COUNTRY_CODE_DESCRIPTION, this.i18n.getMessage(COUNTRY_NOT_ISO, locale));
+        }
+
+        // TODO check OPC_KEY : payment 0 EUR fail si errorCode = 500 + "error_label":"Business Transaction  ..."
         return errors;
     }
 
     @Override
     public ReleaseInformation getReleaseInformation() {
-        Properties props = new Properties();
-        try {
-            props.load(ConfigurationServiceImpl.class.getClassLoader().getResourceAsStream("release.properties"));
-        } catch (IOException e) {
-            final String message = "An error occurred reading the file: release.properties";
-            LOGGER.error(message);
-            throw new RuntimeException(message, e);
-        }
 
-        LocalDate date = LocalDate.parse(props.getProperty("release.date"), DateTimeFormatter.ofPattern(RELEASE_DATE_FORMAT));
+        LocalDate date = LocalDate.parse(ReleasePropertiesEnum.INSTANCE.get(ConfigurationConstants.RELEASE_DATE),
+                DateTimeFormatter.ofPattern(ConfigurationConstants.RELEASE_DATE_FORMAT));
         return ReleaseInformation.ReleaseBuilder.aRelease()
                 .withDate(date)
-                .withVersion(props.getProperty(RELEASE_VERSION))
+                .withVersion(ReleasePropertiesEnum.INSTANCE.get(ConfigurationConstants.RELEASE_VERSION))
                 .build();
     }
 
     @Override
     public String getName(Locale locale) {
 
-        return this.i18n.getMessage(PAYMENT_METHOD_NAME, locale);
+        return this.i18n.getMessage(ConfigurationConstants.PAYMENT_METHOD_NAME, locale);
     }
 }

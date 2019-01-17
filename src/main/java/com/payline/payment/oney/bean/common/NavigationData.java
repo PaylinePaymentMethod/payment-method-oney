@@ -1,8 +1,6 @@
 package com.payline.payment.oney.bean.common;
 
 import com.google.gson.annotations.SerializedName;
-import com.payline.payment.oney.exception.InvalidRequestException;
-import com.payline.pmapi.bean.payment.Environment;
 
 public class NavigationData extends OneyBean {
 
@@ -72,17 +70,6 @@ public class NavigationData extends OneyBean {
         public NavigationData.Builder withPendingUrl(String pendingUrl) {
             this.pendingUrl = pendingUrl;
             return this;
-        }
-
-        public NavigationData.Builder fromEnvironment(Environment environment) throws InvalidRequestException {
-            if (environment == null) {
-                throw new InvalidRequestException("Payment Environment must not be null");
-            }
-            return aNavigationDataBuilder()
-                    .withNotificationUrl(environment.getNotificationURL())
-                    .withSuccesUrl(environment.getRedirectionReturnURL())
-                    .withPendingUrl(environment.getRedirectionReturnURL())
-                    .withFailUrl(environment.getRedirectionCancelURL());
         }
 
         private NavigationData.Builder verifyIntegrity() {

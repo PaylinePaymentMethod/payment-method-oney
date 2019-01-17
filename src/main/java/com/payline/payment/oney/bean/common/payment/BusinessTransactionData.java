@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyBean;
 import com.payline.pmapi.bean.payment.ContractConfiguration;
 
-import static com.payline.payment.oney.utils.OneyConstants.BUSINESS_TRANSACTION_CODE;
+import static com.payline.payment.oney.utils.OneyConstants.OPC_KEY;
 
 public class BusinessTransactionData extends OneyBean {
 
@@ -70,11 +70,11 @@ public class BusinessTransactionData extends OneyBean {
 
         public BusinessTransactionData.Builder fromPayline(ContractConfiguration contract) {
 
-            if (contract.getProperty(BUSINESS_TRANSACTION_CODE) == null) {
-                throw new IllegalStateException("Property " + BUSINESS_TRANSACTION_CODE + " doesn't exists");
+            if (contract.getProperty(OPC_KEY) == null) {
+                throw new IllegalStateException("Property " + OPC_KEY + " doesn't exists");
             }
 
-            this.code = contract.getProperty(BUSINESS_TRANSACTION_CODE).getValue();
+            this.code = contract.getProperty(OPC_KEY).getValue();
 
             //optional ajouter dans les contract configuration  v2 ??
             /**

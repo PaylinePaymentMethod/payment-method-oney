@@ -2,13 +2,29 @@ package com.payline.payment.oney.common.bean;
 
 import com.payline.payment.oney.bean.common.NavigationData;
 import com.payline.payment.oney.exception.InvalidRequestException;
-import com.payline.pmapi.bean.payment.Environment;
+import com.payline.payment.oney.service.BeanAssembleService;
+import com.payline.payment.oney.service.impl.BeanAssemblerServiceImpl;
+import com.payline.payment.oney.utils.TestUtils;
+import com.payline.pmapi.bean.payment.request.PaymentRequest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class NavigationDataTest {
 
     private NavigationData navigationData;
+
+    private BeanAssembleService beanAssembleService;
+
+    private PaymentRequest paymentRequest;
+
+    @BeforeAll
+    public void setUp() {
+        beanAssembleService = BeanAssemblerServiceImpl.getInstance();
+        paymentRequest = TestUtils.createDefaultPaymentRequest();
+    }
 
     @Test
     public void buildNavigationData() {
@@ -44,24 +60,19 @@ public class NavigationDataTest {
     @Test
     public void buildNavigationDataFromPayline() throws InvalidRequestException {
 
-        Environment environment = new Environment("notif", "successOrPending", "fail", true);
-        navigationData = NavigationData.Builder.aNavigationDataBuilder()
-                .fromEnvironment(environment)
-                .build();
+        navigationData = beanAssembleService.assembleNavigationData(paymentRequest);
 
-        Assertions.assertEquals("notif", navigationData.getNotificationUrl());
-        Assertions.assertEquals("successOrPending", navigationData.getPendingUrl());
-        Assertions.assertEquals("successOrPending", navigationData.getSuccessUrl());
-        Assertions.assertEquals("fail", navigationData.getFailUrl());
+        Assertions.assertEquals("https://succesurl.com/", navigationData.getNotificationUrl());
+        Assertions.assertEquals("http://redirectionURL.com", navigationData.getPendingUrl());
+        Assertions.assertEquals("http://redirectionURL.com", navigationData.getSuccessUrl());
+        Assertions.assertEquals("http://redirectionCancelURL.com", navigationData.getFailUrl());
     }
 
 
     @Test
     public void toStringTest() throws InvalidRequestException {
-        Environment environment = new Environment("notif", "successOrPending", "fail", true);
-        navigationData = NavigationData.Builder.aNavigationDataBuilder()
-                .fromEnvironment(environment)
-                .build();
+
+        navigationData = beanAssembleService.assembleNavigationData(paymentRequest);
 
         Assertions.assertTrue(navigationData.toString().contains("success_url"));
         Assertions.assertTrue(navigationData.toString().contains("fail_url"));

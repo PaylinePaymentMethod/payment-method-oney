@@ -1,8 +1,7 @@
 package com.payline.payment.oney.service;
 
-import com.payline.payment.oney.exception.DecryptException;
+import com.payline.payment.oney.bean.request.OneyConfirmRequest;
 import com.payline.payment.oney.service.impl.PaymentWithRedirectionServiceImpl;
-import com.payline.payment.oney.service.impl.request.OneyConfirmRequest;
 import com.payline.payment.oney.utils.http.OneyHttpClient;
 import com.payline.payment.oney.utils.http.StringResponse;
 import com.payline.pmapi.bean.common.FailureCause;
@@ -42,16 +41,14 @@ public class PaymentWithRedirectionServiceTest {
     }
 
     @Test
-    public void confirmPaymentTest() throws IOException, URISyntaxException, DecryptException {
+    public void confirmPaymentTest() throws Exception {
         StringResponse responseMocked = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ulzsMg0QfZ1N009CwI1PLZzBnbfv6/Enufe5TriN1gKQkEmbMYU0PMtHdk+eF7boW/lsIc5PmjpFX1E/4MUJGkzI=\"}");
-        Mockito.doReturn(responseMocked).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyBoolean());
+        Mockito.doReturn(responseMocked).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap());
 
-        OneyConfirmRequest paymentRequest = OneyConfirmRequest.Builder.aOneyConfirmRequest()
-                .fromPaylineRedirectionPaymentRequest(createCompleteRedirectionPaymentBuilder())
+        OneyConfirmRequest paymentRequest = new OneyConfirmRequest.Builder(createCompleteRedirectionPaymentBuilder())
                 .build();
 
-        PaymentResponse response = service.validatePayment(paymentRequest, true);
+        PaymentResponse response = service.validatePayment(paymentRequest);
 
         if (response.getClass() == PaymentResponseSuccess.class) {
             PaymentResponseSuccess success = (PaymentResponseSuccess) response;
@@ -63,16 +60,14 @@ public class PaymentWithRedirectionServiceTest {
     }
 
     @Test
-    public void confirmPaymentTestInvalidData() throws IOException, URISyntaxException, DecryptException {
+    public void confirmPaymentTestInvalidData() throws Exception {
         StringResponse responseMocked = createStringResponse(400, "Bad Request", "{\"Payments_Error_Response\":{\"error_list \":[{\"field\":\"Merchant_request_id\",\"error_code\":\"ERR_04\",\"error_label\":\"Value of the field is invalid [{String}]\"}]}}");
-        Mockito.doReturn(responseMocked).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyBoolean());
+        Mockito.doReturn(responseMocked).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap());
 
-        OneyConfirmRequest paymentRequest = OneyConfirmRequest.Builder.aOneyConfirmRequest()
-                .fromPaylineRedirectionPaymentRequest(createCompleteRedirectionPaymentBuilder())
+        OneyConfirmRequest paymentRequest = new OneyConfirmRequest.Builder(createCompleteRedirectionPaymentBuilder())
                 .build();
 
-        PaymentResponse response = service.validatePayment(paymentRequest, true);
+        PaymentResponse response = service.validatePayment(paymentRequest);
         PaymentResponseFailure fail = (PaymentResponseFailure) response;
         Assertions.assertEquals("400", fail.getErrorCode());
         Assertions.assertEquals(FailureCause.INVALID_DATA, fail.getFailureCause());
@@ -80,16 +75,14 @@ public class PaymentWithRedirectionServiceTest {
 
 
     @Test
-    public void confirmPaymentTestNotFound() throws IOException, URISyntaxException, DecryptException {
+    public void confirmPaymentTestNotFound() throws Exception {
         StringResponse responseMocked = createStringResponse(404, "Not Found", "{\"statusCode\": 404, \"message\": \"Resource not found\"}");
-        Mockito.doReturn(responseMocked).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyBoolean());
+        Mockito.doReturn(responseMocked).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap());
 
-        OneyConfirmRequest paymentRequest = OneyConfirmRequest.Builder.aOneyConfirmRequest()
-                .fromPaylineRedirectionPaymentRequest(createCompleteRedirectionPaymentBuilder())
+        OneyConfirmRequest paymentRequest = new OneyConfirmRequest.Builder(createCompleteRedirectionPaymentBuilder())
                 .build();
 
-        PaymentResponseFailure response = (PaymentResponseFailure) service.validatePayment(paymentRequest, true);
+        PaymentResponseFailure response = (PaymentResponseFailure) service.validatePayment(paymentRequest);
         Assertions.assertEquals("404", response.getErrorCode());
         Assertions.assertEquals(FailureCause.COMMUNICATION_ERROR, response.getFailureCause());
 
@@ -99,8 +92,7 @@ public class PaymentWithRedirectionServiceTest {
     @Test
     public void finalizeRedirectionPaymentTestOK() throws IOException, URISyntaxException {
         StringResponse responseMocked = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ulzsMg0QfZ1N009CwI1PLZzBnbfv6/Enufe5TriN1gKQkEmbMYU0PMtHdk+eF7boW/lsIc5PmjpFX1E/4MUJGkzI=\"}");
-        Mockito.doReturn(responseMocked).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyBoolean());
+        Mockito.doReturn(responseMocked).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap());
 
         RedirectionPaymentRequest redirectionPaymentRequest = createCompleteRedirectionPaymentBuilder();
         PaymentResponse response = service.finalizeRedirectionPayment(redirectionPaymentRequest);
@@ -118,8 +110,7 @@ public class PaymentWithRedirectionServiceTest {
     @Test
     public void finalizeRedirectionPaymentTestKO() throws IOException, URISyntaxException {
         StringResponse responseMocked = createStringResponse(200, "OK", "{\"encrypted_message\":\"ymDHJ7HBRe49whKjH1HDtA==\"}");
-        Mockito.doReturn(responseMocked).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyBoolean());
+        Mockito.doReturn(responseMocked).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap());
 
         RedirectionPaymentRequest redirectionPaymentRequest = createCompleteRedirectionPaymentBuilder();
         PaymentResponse response = service.finalizeRedirectionPayment(redirectionPaymentRequest);
@@ -136,12 +127,11 @@ public class PaymentWithRedirectionServiceTest {
     public void handleSessionExpiredTestFunded() throws IOException, URISyntaxException {
 
         StringResponse responseMocked = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ulzsMg0QfZ1N009CwI1PLZzBnbfv6/Enufe5TriN1gKQkEmbMYU0PMtHdk+eF7boW/lsIc5PmjpFX1E/4MUJGkzI=\"}");
-        Mockito.doReturn(responseMocked).when(httpClient).doGet(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyMap(), Mockito.anyBoolean());
+        Mockito.doReturn(responseMocked).when(httpClient).doGet(Mockito.anyString(), Mockito.anyMap());
         TransactionStatusRequest transactionStatusReq = createDefaultTransactionStatusRequest();
         PaymentResponse paymentResponse = service.handleSessionExpired(transactionStatusReq);
         Assertions.assertNotNull(paymentResponse);
-        Assertions.assertTrue(paymentResponse.getClass().equals(PaymentResponseSuccess.class));
+        Assertions.assertEquals(paymentResponse.getClass(), PaymentResponseSuccess.class);
 
     }
 
@@ -149,12 +139,11 @@ public class PaymentWithRedirectionServiceTest {
     public void handleSessionExpiredTestOnHold() throws IOException, URISyntaxException {
 
         StringResponse responseMocked = createStringResponse(200, "OK", "{\"encrypted_message\":\"Zfxsl1nYU+7gI2vAD7S+JSO1EkNNk4gaIQcX++gJrX7NfjZ417t0L7ruzUCqFyxIVQWywc2FqrUK6J4kU5EPh0ksAzV6KmKWDolDoGte7uENMlMzcTriutnu5d/fJEf1\"}");
-        Mockito.doReturn(responseMocked).when(httpClient).doGet(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyMap(), Mockito.anyBoolean());
+        Mockito.doReturn(responseMocked).when(httpClient).doGet(Mockito.anyString(), Mockito.anyMap());
         TransactionStatusRequest transactionStatusReq = createDefaultTransactionStatusRequest();
         PaymentResponse paymentResponse = service.handleSessionExpired(transactionStatusReq);
         Assertions.assertNotNull(paymentResponse);
-        Assertions.assertTrue(paymentResponse.getClass().equals(PaymentResponseOnHold.class));
+        Assertions.assertEquals(paymentResponse.getClass(), PaymentResponseOnHold.class);
 
     }
 
@@ -162,12 +151,11 @@ public class PaymentWithRedirectionServiceTest {
     public void handleSessionExpiredTestRefused() throws IOException, URISyntaxException {
 
         StringResponse responseMocked = createStringResponse(200, "OK", "{\"encrypted_message\":\"ymDHJ7HBRe49whKjH1HDtA==\"}");
-        Mockito.doReturn(responseMocked).when(httpClient).doGet(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyMap(), Mockito.anyBoolean());
+        Mockito.doReturn(responseMocked).when(httpClient).doGet(Mockito.anyString(), Mockito.anyMap());
         TransactionStatusRequest transactionStatusReq = createDefaultTransactionStatusRequest();
         PaymentResponse paymentResponse = service.handleSessionExpired(transactionStatusReq);
         Assertions.assertNotNull(paymentResponse);
-        Assertions.assertTrue(paymentResponse.getClass().equals(PaymentResponseFailure.class));
+        Assertions.assertEquals(paymentResponse.getClass(), PaymentResponseFailure.class);
 
     }
 
@@ -175,17 +163,15 @@ public class PaymentWithRedirectionServiceTest {
     public void handleSessionExpiredTestFavorable() throws IOException, URISyntaxException {
 
         StringResponse responseMocked = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ul/bQBJ3C1/cyjmvmAAmMq9gLttO54jS+b/UB/MPwY6YeiFWc7TtYNuIHJF3Grkl2/O4B6r4zkTpus9DrEZIou4aE8tfX+G43n2zFDAoYG3u3\"}");
-        Mockito.doReturn(responseMocked).when(httpClient).doGet(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyMap(), Mockito.anyBoolean());
+        Mockito.doReturn(responseMocked).when(httpClient).doGet(Mockito.anyString(), Mockito.anyMap());
         //Mock appel post dans PaymentWithRedirection.validate()
         StringResponse responseMocked2 = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ulzsMg0QfZ1N009CwI1PLZzBnbfv6/Enufe5TriN1gKQkEmbMYU0PMtHdk+eF7boW/lsIc5PmjpFX1E/4MUJGkzI=\"}");
-        Mockito.doReturn(responseMocked2).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyBoolean());
+        Mockito.doReturn(responseMocked2).when(httpClient).doPost(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap());
 
         TransactionStatusRequest transactionStatusReq = createDefaultTransactionStatusRequest();
         PaymentResponse paymentResponse = service.handleSessionExpired(transactionStatusReq);
         Assertions.assertNotNull(paymentResponse);
-        Assertions.assertTrue(paymentResponse.getClass().equals(PaymentResponseSuccess.class));
+        Assertions.assertEquals(paymentResponse.getClass(), PaymentResponseSuccess.class);
 
     }
 }

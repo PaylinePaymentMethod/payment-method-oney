@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.payline.payment.oney.utils.OneyConstants.EXTERNAL_REFERENCE_TYPE;
+import static com.payline.payment.oney.utils.PluginUtils.createFloatAmount;
 
 public class Purchase extends OneyBean {
 
@@ -21,7 +22,7 @@ public class Purchase extends OneyBean {
     @SerializedName("currency_code")
     private String currencyCode; //ISO 4217
     @SerializedName("purchase_merchant")
-    private PurchaseMerchant purchaseMerchant; //CMDE
+    private PurchaseMerchant purchaseMerchant;
     @SerializedName("delivery")
     private Delivery delivery;
     @SerializedName("item_list")
@@ -87,7 +88,7 @@ public class Purchase extends OneyBean {
         private Float purchaseAmount;
         private String currencyCode; //ISO 4217
         private PurchaseMerchant purchaseMerchant;
-        private Delivery delivery; //CMDE
+        private Delivery delivery;
         private List<Item> listItem;
         private Integer numberOfItems;
 
@@ -140,7 +141,7 @@ public class Purchase extends OneyBean {
         public Purchase.Builder fromPayline(PaymentRequest request) {
             this.externalReferenceType = EXTERNAL_REFERENCE_TYPE;
             this.externalReference = request.getOrder().getReference();
-            this.purchaseAmount = request.getOrder().getAmount().getAmountInSmallestUnit().floatValue();
+            this.purchaseAmount = createFloatAmount(request.getOrder().getAmount().getAmountInSmallestUnit(),request.getOrder().getAmount().getCurrency());
             this.currencyCode = request.getOrder().getAmount().getCurrency().getCurrencyCode();
             this.purchaseMerchant = PurchaseMerchant.Builder.aPurchaseMerchantBuilder()
                     .fromPayline(request)

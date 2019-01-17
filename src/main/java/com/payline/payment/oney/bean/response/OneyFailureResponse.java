@@ -1,4 +1,4 @@
-package com.payline.payment.oney.service.impl.response;
+package com.payline.payment.oney.bean.response;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
@@ -48,7 +48,6 @@ public class OneyFailureResponse extends OneyBean {
         Gson parser = new Gson();
         return parser.fromJson(json, OneyFailureResponse.class);
     }
-
 
 
 }

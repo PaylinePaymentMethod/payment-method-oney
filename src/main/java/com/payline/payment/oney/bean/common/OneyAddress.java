@@ -163,7 +163,8 @@ public class OneyAddress extends OneyBean {
             }
             if (this.countryCode == null) {
                 throw new IllegalStateException("OneyAddress must have a countryCode when built");
-            } else return this;
+            }
+            return this;
 
         }
 
@@ -177,29 +178,27 @@ public class OneyAddress extends OneyBean {
             this.postalCode = buyer.getAddressForType(addressType).getZipCode();
             this.countryLabel = getCountryNameCodeFromCountryCode2(buyer.getAddressForType(addressType).getCountry());
             this.countryCode = getIsoAlpha3CodeFromCountryCode2(buyer.getAddressForType(addressType).getCountry());
-//            this.arrondissementCode = buyer.getAddressForType(Buyer.AddressType.BILLING);
-
 
             return this;
         }
 
-// Découpe l'adresse intelligemment
+        // Découpe l'adresse intelligemment
         private void truncateAddress(String street1, String street2) {
-          Map addressTruncated =  truncateLongText(street1, street2, 38);
+            Map addressTruncated = truncateLongText(street1, street2, 38);
 
-            if(addressTruncated.get("line1")!=null) {
+            if (addressTruncated.get("line1") != null) {
                 this.line1 = addressTruncated.get("line1").toString();
             }
-            if(addressTruncated.get("line2")!=null) {
+            if (addressTruncated.get("line2") != null) {
                 this.line2 = addressTruncated.get("line2").toString();
             }
-            if(addressTruncated.get("line3")!=null) {
+            if (addressTruncated.get("line3") != null) {
                 this.line3 = addressTruncated.get("line3").toString();
             }
-            if(addressTruncated.get("line4")!=null) {
+            if (addressTruncated.get("line4") != null) {
                 this.line4 = addressTruncated.get("line4").toString();
             }
-            if(addressTruncated.get("line5")!=null) {
+            if (addressTruncated.get("line5") != null) {
                 this.line5 = addressTruncated.get("line5").toString();
             }
         }

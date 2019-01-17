@@ -5,13 +5,6 @@ public class OneyConstants {
     private OneyConstants() {
     }
 
-    //Message common with all payment method
-    public static final String PAYMENT_METHOD_NAME = "paymentMethod.name";
-
-    public static final String RELEASE_DATE_FORMAT = "dd/MM/yyyy";
-    public static final String RELEASE_DATE = "release.date";
-    public static final String RELEASE_VERSION = "release.version";
-    public static final String RELEASE_PROPERTIES = "release.properties";
 
     public static final String I18N_SERVICE_DEFAULT_LOCALE = "en";
     public static final String RESOURCE_BUNDLE_BASE_NAME = "messages";
@@ -23,15 +16,12 @@ public class OneyConstants {
     public static final String SECRET_KEY = "X-Oney-Secret";
     public static final String SECRET_VALUE = "Method-body";
 
-
     public static final String CONFIG_HTTP_CONNECT_TIMEOUT = "http.connectTimeout";
     public static final String CONFIG_HTTP_WRITE_TIMEOUT = "http.writeTimeout";
     public static final String CONFIG_HTTP_READ_TIMEOUT = "http.readTimeout";
 
 
     //Constant specific of this payment method
-    public static final String AUTHORIZATION_VALUE = "oney.authorization";
-    public static final String CHIFFREMENT_KEY = "partner.oney.access.key";
 
     public static final String X_ONEY_AUTHORIZATION_LABEL = "api.key.label";
     public static final String X_ONEY_AUTHORIZATION_KEY = "apiKey";
@@ -80,23 +70,26 @@ public class OneyConstants {
     public static final String ID_INTERNATIONAL_MESSAGE_ERROR = "international.code.error.message";
 
 
-    public static final String SCHEME = "https";
-    public static final String SANDBOX_URL = "oney-staging.azure-api.net";
-    public static final String PRODUCTION_URL = "api-staging.oney.io";
+    public static final String PARTNER_AUTHORIZATION_VALUE = "oney.authorization";
+    public static final String PARTNER_CHIFFREMENT_KEY = "partner.oney.access.secret.key";
+    public static final String PARTNER_AUTHRIZATION_KEY = "partner.oney.access.key";
+    public static final String PARTNER_API_URL = "partner.oney.url";
+    public static final String HEADER_COUNTRY_CODE = "oney.coutry.code";
 
+
+    public static final String PIPE = "%7C";
 
 
     //Request URL's
-    public static final String PAYMENT_REQUEST_URL = "staging/payments/v1/purchase/facilypay_url";
-    public static final String CONFIRM_REQUEST_URL = "staging/payments/v1/purchase";
-    public static final String CANCEL_REQUEST_URL = "staging/payments/v1/purchase";
-    public static final String STATUS_REQUEST_URL = "staging/payments/v1/purchase";
+    public static final String PAYMENT_REQUEST_URL = "/staging/payments/v1/purchase/facilypay_url";
+    public static final String CONFIRM_REQUEST_URL = "/staging/payments/v1/purchase";
+    public static final String CANCEL_REQUEST_URL = "/staging/payments/v1/purchase";
+    public static final String STATUS_REQUEST_URL = "/staging/payments/v1/purchase";
 
     //0 immediate, 1 deferred, 2 check card
     public static final int PAYMENT_TYPE = 0;
 
-    public static final String BUSINESS_TRANSACTION_CODE = "opc";
-    //fixme changer de localisation? config.properties ?
+    // Paramètre optionnel, n'est pas utilisé dans la version actuelle
     public static final int BUSINESS_TRANSACTION_VERSION = 1;
     //PNFCB / AFFECTE / NONAMORTISSABLE
     public static final String BUSINESS_TRANSACTION_TYPE = "PNFCB";
@@ -105,8 +98,11 @@ public class OneyConstants {
     public static final String EXTERNAL_REFERENCE_KEY = "externalReference";
     public static final String PAYMENT_AMOUNT_KEY = "paymentAmount";
 
-//
     //Code HTTP
     public static final int HTTP_OK = 200;
+
+
+    public static final String COUNTRY_NOT_ISO = "contract.errors.countryNotISO";
+    public static final String LANGUAGE_NOT_ISO = "contract.errors.languageNotISO";
 
 }

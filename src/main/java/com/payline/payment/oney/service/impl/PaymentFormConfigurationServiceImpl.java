@@ -1,7 +1,8 @@
 package com.payline.payment.oney.service.impl;
 
-import com.payline.payment.oney.exception.InvalidFileException;
 import com.payline.payment.oney.utils.i18n.I18nService;
+import com.payline.payment.oney.utils.properties.constants.ConfigurationConstants;
+import com.payline.payment.oney.utils.properties.service.LogoPropertiesEnum;
 import com.payline.pmapi.bean.paymentform.bean.PaymentFormLogo;
 import com.payline.pmapi.bean.paymentform.bean.form.NoFieldForm;
 import com.payline.pmapi.bean.paymentform.request.PaymentFormConfigurationRequest;
@@ -20,10 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
-import java.util.Properties;
 
-import static com.payline.payment.oney.utils.LogoConstants.*;
-import static com.payline.payment.oney.utils.OneyConstants.PAYMENT_METHOD_NAME;
+import static com.payline.payment.oney.utils.properties.constants.LogoConstants.*;
 
 public class PaymentFormConfigurationServiceImpl implements PaymentFormConfigurationService {
 
@@ -50,49 +49,42 @@ public class PaymentFormConfigurationServiceImpl implements PaymentFormConfigura
 
     @Override
     public PaymentFormLogoResponse getPaymentFormLogo(PaymentFormLogoRequest paymentFormLogoRequest) {
-        Properties props = new Properties();
-        try {
-            props.load(ConfigurationServiceImpl.class.getClassLoader().getResourceAsStream(LOGO_PROPERTIES));
-            return PaymentFormLogoResponseFile.PaymentFormLogoResponseFileBuilder.aPaymentFormLogoResponseFile()
-                    .withHeight(Integer.valueOf(props.getProperty(LOGO_HEIGHT)))
-                    .withWidth(Integer.valueOf(props.getProperty(LOGO_WIDTH)))
-                    .withTitle(i18n.getMessage(PAYMENT_METHOD_NAME, paymentFormLogoRequest.getLocale()))
-                    .withAlt(i18n.getMessage(PAYMENT_METHOD_NAME, paymentFormLogoRequest.getLocale()))
-                    .build();
-        } catch (IOException e) {
-            LOGGER.error("An error occurred reading the file: " + LOGO_PROPERTIES + " {}", e.getMessage(), e);
-            throw new InvalidFileException("Failed to reading file logo.properties: ", e);
 
-        }
+        Locale locale = paymentFormLogoRequest.getLocale();
+
+        return PaymentFormLogoResponseFile.PaymentFormLogoResponseFileBuilder.aPaymentFormLogoResponseFile()
+                .withHeight(Integer.valueOf(LogoPropertiesEnum.INSTANCE.get(LOGO_HEIGHT)))
+                .withWidth(Integer.valueOf(LogoPropertiesEnum.INSTANCE.get(LOGO_WIDTH)))
+                .withTitle(i18n.getMessage(ConfigurationConstants.PAYMENT_METHOD_NAME, locale))
+                .withAlt(i18n.getMessage(ConfigurationConstants.PAYMENT_METHOD_NAME, locale))
+                .build();
+
     }
 
 
     @Override
     public PaymentFormLogo getLogo(String var1, Locale locale) {
-        Properties props = new Properties();
-        try {
-            props.load(ConfigurationServiceImpl.class.getClassLoader().getResourceAsStream(LOGO_PROPERTIES));
-        } catch (IOException e) {
-            LOGGER.error("An error occurred reading the file: " + LOGO_PROPERTIES + " {}", e.getMessage(), e);
-            throw new InvalidFileException("Failed to reading file logo.properties: ", e);
 
+        String fileName = LogoPropertiesEnum.INSTANCE.get(LOGO_FILE_NAME);
+        InputStream input = PaymentFormConfigurationServiceImpl.class.getClassLoader().getResourceAsStream(fileName);
+        if (input == null) {
+            LOGGER.error("Unable to load the logo {}", LOGO_FILE_NAME);
+            throw new RuntimeException("Unable to load the logo " + LOGO_FILE_NAME);
         }
-        String fileName = props.getProperty(LOGO_FILE_NAME);
         try {
             // Read logo file
-            InputStream input = PaymentFormConfigurationServiceImpl.class.getClassLoader().getResourceAsStream(fileName);
             BufferedImage logo = ImageIO.read(input);
 
             // Recover byte array from image
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(logo, props.getProperty(LOGO_FORMAT), baos);
+            ImageIO.write(logo, LogoPropertiesEnum.INSTANCE.get(LOGO_FORMAT), baos);
 
             return PaymentFormLogo.PaymentFormLogoBuilder.aPaymentFormLogo()
                     .withFile(baos.toByteArray())
-                    .withContentType(props.getProperty(LOGO_CONTENT_TYPE))
+                    .withContentType(LogoPropertiesEnum.INSTANCE.get(LOGO_CONTENT_TYPE))
                     .build();
         } catch (IOException e) {
-            LOGGER.error("Unable to load the logo {}", e.getMessage(), e);
+            LOGGER.error("Unable to load the logo", e);
             throw new RuntimeException(e);
         }
     }

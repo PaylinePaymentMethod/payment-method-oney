@@ -48,8 +48,8 @@ public class OneyCrypto {
 
         } catch (NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException |
                 NoSuchPaddingException | InvalidKeyException e) {
-            LOGGER.error("Unable to encrypt this message: {}", e.getMessage(), e);
-            throw new DecryptException("Unable to encrypt this message: " + e.getMessage());
+            LOGGER.error("Unable to encrypt this message", e);
+            throw new DecryptException("Unable to encrypt this message", e);
         }
     }
 
@@ -77,8 +77,8 @@ public class OneyCrypto {
 
         } catch (NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException |
                 NoSuchPaddingException | InvalidKeyException e) {
-            LOGGER.error("Unable to decrypt this message: {}", e.getMessage(), e);
-            throw new DecryptException("Unable to decrypt this message: " + e.getMessage());
+            LOGGER.error("Unable to decrypt this message", e);
+            throw new DecryptException("Unable to decrypt this message", e);
         }
     }
 }

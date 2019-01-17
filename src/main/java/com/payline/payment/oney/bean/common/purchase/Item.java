@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.payline.payment.oney.bean.common.enums.CategoryCodeHandler.findCategory;
+import static com.payline.payment.oney.utils.PluginUtils.createFloatAmount;
 
 public class Item extends OneyBean {
 
@@ -178,7 +179,7 @@ public class Item extends OneyBean {
             this.label = item.getComment(); //or get Brand +" "+ get comment ?
             this.itemExternalcode = item.getReference();
             this.quantity = item.getQuantity().intValue();
-            this.price = item.getAmount().getAmountInSmallestUnit().floatValue();
+            this.price = createFloatAmount(item.getAmount().getAmountInSmallestUnit(),item.getAmount().getCurrency());
             //note HME  mapper selon marketplace lot 2
 //            this.marketplaceFlag = 0;
 //            this.marketplaceName = null;
@@ -206,10 +207,9 @@ public class Item extends OneyBean {
             if (this.price == null) {
                 throw new IllegalStateException("Item must have a price when built");
             }
-            if (this.marketplaceFlag != null) {
-                if (this.marketplaceFlag == 1 && this.marketplaceName == null) {
-                    throw new IllegalStateException("Item must have a marketplaceName when built");
-                }
+            if (this.marketplaceFlag != null && this.marketplaceFlag == 1 && this.marketplaceName == null) {
+                throw new IllegalStateException("Item must have a marketplaceName when built");
+
             }
             return this;
         }

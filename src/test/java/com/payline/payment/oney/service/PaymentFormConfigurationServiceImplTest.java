@@ -17,7 +17,6 @@ import java.util.Currency;
 import java.util.Locale;
 
 import static com.payline.payment.oney.utils.TestUtils.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
@@ -43,7 +42,7 @@ public class PaymentFormConfigurationServiceImplTest {
         PaymentFormConfigurationResponseSpecific paymentFormConfigurationResponse = (PaymentFormConfigurationResponseSpecific) service.getPaymentFormConfiguration(paymentFormConfigurationRequest);
 
         Assertions.assertNotNull(paymentFormConfigurationResponse.getPaymentForm());
-        Assertions.assertEquals("Oney 3x 4x", paymentFormConfigurationResponse.getPaymentForm().getButtonText());
+        Assertions.assertEquals("Payer avec Oney 3x 4x", paymentFormConfigurationResponse.getPaymentForm().getButtonText());
         Assertions.assertEquals("Payer avec Oney 3x 4x", paymentFormConfigurationResponse.getPaymentForm().getDescription());
         Assertions.assertTrue(paymentFormConfigurationResponse.getPaymentForm().isDisplayButton());
     }

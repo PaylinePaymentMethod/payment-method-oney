@@ -4,6 +4,7 @@ import com.payline.payment.oney.service.impl.ConfigurationServiceImpl;
 import com.payline.pmapi.bean.configuration.ReleaseInformation;
 import com.payline.pmapi.bean.configuration.parameter.AbstractParameter;
 import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
+import com.payline.pmapi.bean.payment.ContractProperty;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +41,8 @@ public class ConfigurationServiceImplTest {
         accountInfo.put(X_ONEY_AUTHORIZATION_KEY, "mykey");
         accountInfo.put(PSP_GUID_KEY, "psp_id_test");
         accountInfo.put(MERCHANT_GUID_KEY, "merchant_guid_test");
+        accountInfo.put(COUNTRY_CODE_KEY, "FR");
+        accountInfo.put(LANGUAGE_CODE_KEY, "FR");
 
 
         ContractParametersCheckRequest contractParametersCheckRequest = ContractParametersCheckRequest.CheckRequestBuilder
@@ -53,6 +56,50 @@ public class ConfigurationServiceImplTest {
         Map<String, String> errors = service.check(contractParametersCheckRequest);
         Assertions.assertEquals(0, errors.size());
 
+    }
+
+    @Test
+    public void checkCountryKO() {
+
+        Map<String, String> accountInfo = new HashMap<>();
+        accountInfo.put(X_ONEY_AUTHORIZATION_KEY, "mykey");
+        accountInfo.put(PSP_GUID_KEY, "psp_id_test");
+        accountInfo.put(MERCHANT_GUID_KEY, "merchant_guid_test");
+
+
+        ContractParametersCheckRequest contractParametersCheckRequest = ContractParametersCheckRequest.CheckRequestBuilder
+                .aCheckRequest()
+                .withAccountInfo(accountInfo)
+                .withLocale(Locale.FRANCE)
+                .withContractConfiguration(createContractConfiguration())
+                .withEnvironment(createDefaultEnvironment())
+                .build();
+        contractParametersCheckRequest.getContractConfiguration().getContractProperties().put(COUNTRY_CODE_KEY, new ContractProperty("BEL"));
+        Map<String, String> errors = service.check(contractParametersCheckRequest);
+        Assertions.assertEquals(1, errors.size());
+        Assertions.assertTrue(errors.keySet().contains(COUNTRY_CODE_DESCRIPTION));
+    }
+
+    @Test
+    public void checkLanguageKO() {
+
+        Map<String, String> accountInfo = new HashMap<>();
+        accountInfo.put(X_ONEY_AUTHORIZATION_KEY, "mykey");
+        accountInfo.put(PSP_GUID_KEY, "psp_id_test");
+        accountInfo.put(MERCHANT_GUID_KEY, "merchant_guid_test");
+
+
+        ContractParametersCheckRequest contractParametersCheckRequest = ContractParametersCheckRequest.CheckRequestBuilder
+                .aCheckRequest()
+                .withAccountInfo(accountInfo)
+                .withLocale(Locale.FRANCE)
+                .withContractConfiguration(createContractConfiguration())
+                .withEnvironment(createDefaultEnvironment())
+                .build();
+        contractParametersCheckRequest.getContractConfiguration().getContractProperties().put(LANGUAGE_CODE_KEY, new ContractProperty("FR"));
+        Map<String, String> errors = service.check(contractParametersCheckRequest);
+        Assertions.assertEquals(1, errors.size());
+        Assertions.assertTrue(errors.keySet().contains(LANGUAGE_CODE_KEY));
     }
 
     @Test

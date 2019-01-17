@@ -1,13 +1,12 @@
 package com.payline.payment.oney.utils.http;
 
-import com.payline.payment.oney.utils.config.ConfigProperties;
+import com.payline.payment.oney.utils.properties.service.ConfigPropertiesEnum;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -24,14 +23,13 @@ import java.net.URISyntaxException;
 import static com.payline.payment.oney.utils.OneyConstants.*;
 
 /**
-        * This utility class provides a basic HTTP client to send requests, using OkHttp library.
-        * It must be extended to match each payment method needs.
-        */
+ * This utility class provides a basic HTTP client to send requests, using OkHttp library.
+ * It must be extended to match each payment method needs.
+ */
 public abstract class AbstractHttpClient {
 
     private CloseableHttpClient client;
     private static final Logger LOGGER = LogManager.getLogger(AbstractHttpClient.class);
-
 
 
     /**
@@ -40,9 +38,9 @@ public abstract class AbstractHttpClient {
 
     protected AbstractHttpClient() {
 
-        int connectTimeout = Integer.parseInt(ConfigProperties.get(CONFIG_HTTP_CONNECT_TIMEOUT));
-        int requestTimeout = Integer.parseInt(ConfigProperties.get(CONFIG_HTTP_WRITE_TIMEOUT));
-        int readTimeout = Integer.parseInt(ConfigProperties.get(CONFIG_HTTP_READ_TIMEOUT));
+        int connectTimeout = Integer.parseInt(ConfigPropertiesEnum.INSTANCE.get(CONFIG_HTTP_CONNECT_TIMEOUT));
+        int requestTimeout = Integer.parseInt(ConfigPropertiesEnum.INSTANCE.get(CONFIG_HTTP_WRITE_TIMEOUT));
+        int readTimeout = Integer.parseInt(ConfigPropertiesEnum.INSTANCE.get(CONFIG_HTTP_READ_TIMEOUT));
 
 
         final RequestConfig requestConfig = RequestConfig.custom()
@@ -62,21 +60,16 @@ public abstract class AbstractHttpClient {
     /**
      * Send a POST request.
      *
-     * @param scheme      URL scheme
-     * @param host        URL host
-     * @param path        URL path
-     * @param body        Request body
+     * @param url  URL scheme + host
+     * @param path URL path
+     * @param body Request body
      * @return The response returned from the HTTP call
      * @throws IOException        I/O error
      * @throws URISyntaxException URI Syntax Exception
      */
-    protected StringResponse doPost(String scheme, String host, String path,Header[] headers, HttpEntity body) throws IOException, URISyntaxException {
+    protected StringResponse doPost(String url, String path, Header[] headers, HttpEntity body) throws IOException, URISyntaxException {
 
-        final URI uri = new URIBuilder()
-                .setScheme(scheme)
-                .setHost(host)
-                .setPath(path)
-                .build();
+        URI uri = new URI(url + path);
 
 
         final HttpPost httpPostRequest = new HttpPost(uri);
@@ -89,7 +82,7 @@ public abstract class AbstractHttpClient {
         while (count < 3 && strResponse == null) {
             try (CloseableHttpResponse httpResponse = this.client.execute(httpPostRequest)) {
 
-                LOGGER.info("Start partner call... [HOST: {}]", host);
+                LOGGER.info("Start partner call... [URL: {}]", url);
 
                 strResponse = new StringResponse();
                 strResponse.setCode(httpResponse.getStatusLine().getStatusCode());
@@ -118,63 +111,59 @@ public abstract class AbstractHttpClient {
 
     }
 
+
     /**
      * Send a GET request
      *
-     * @param scheme      URL scheme
-     * @param host        URL host
-     * @param path        URL path
+     * @param url  URL RL scheme + host
+     * @param path URL path
      * @return The response returned from the HTTP call
      * @throws IOException        I/O error
      * @throws URISyntaxException URI Syntax Exception
      */
 
-        protected StringResponse doGet(String scheme, String host, String path, Header[] headers) throws IOException, URISyntaxException {
+    protected StringResponse doGet(String url, String path, Header[] headers) throws IOException, URISyntaxException {
 
-            final URI uri = new URIBuilder()
-                    .setScheme(scheme)
-                    .setHost(host)
-                    .setPath(path)
-                    .build();
+        URI uri = new URI(url + path);
 
-            final HttpGet httpGetRequest = new HttpGet(uri);
-            httpGetRequest.setHeaders(headers);
-            final long start = System.currentTimeMillis();
-            int count = 0;
-            StringResponse strResponse = null;
-            while (count < 3 && strResponse == null) {
-                try (CloseableHttpResponse httpResponse = this.client.execute(httpGetRequest)) {
+        final HttpGet httpGetRequest = new HttpGet(uri);
+        httpGetRequest.setHeaders(headers);
+        final long start = System.currentTimeMillis();
+        int count = 0;
+        StringResponse strResponse = null;
+        while (count < 3 && strResponse == null) {
+            try (CloseableHttpResponse httpResponse = this.client.execute(httpGetRequest)) {
 
-                    LOGGER.info("Start partner call... [HOST: {}]", host);
+                LOGGER.info("Start partner call... [URL: {}]", url);
 
-                    strResponse = new StringResponse();
-                    strResponse.setCode(httpResponse.getStatusLine().getStatusCode());
-                    strResponse.setMessage(httpResponse.getStatusLine().getReasonPhrase());
+                strResponse = new StringResponse();
+                strResponse.setCode(httpResponse.getStatusLine().getStatusCode());
+                strResponse.setMessage(httpResponse.getStatusLine().getReasonPhrase());
 
-                    if (httpResponse.getEntity() != null) {
-                        final String responseAsString = EntityUtils.toString(httpResponse.getEntity());
-                        strResponse.setContent(responseAsString);
-                    }
-                    final long end = System.currentTimeMillis();
-
-                    LOGGER.info("End partner call [T: {}ms] [CODE: {}]", end - start, strResponse.getCode());
-
-                } catch (final IOException e) {
-                    LOGGER.error("Error while partner call [T: {}ms]", System.currentTimeMillis() - start, e);
-                    strResponse = null;
-
-                } finally {
-                    count++;
+                if (httpResponse.getEntity() != null) {
+                    final String responseAsString = EntityUtils.toString(httpResponse.getEntity());
+                    strResponse.setContent(responseAsString);
                 }
+                final long end = System.currentTimeMillis();
 
-            }
-            if (strResponse == null) {
-                throw new IOException("Partner response empty");
-            }
+                LOGGER.info("End partner call [T: {}ms] [CODE: {}]", end - start, strResponse.getCode());
 
-            return strResponse;
+            } catch (final IOException e) {
+                LOGGER.error("Error while partner call [T: {}ms]", System.currentTimeMillis() - start, e);
+                strResponse = null;
+
+            } finally {
+                count++;
+            }
 
         }
+        if (strResponse == null) {
+            throw new IOException("Partner response empty");
+        }
+
+        return strResponse;
+
+    }
 
 
 }

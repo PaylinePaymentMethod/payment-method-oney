@@ -1,17 +1,39 @@
 package com.payline.payment.oney.common.bean;
 
 import com.payline.payment.oney.bean.common.enums.PaymentType;
+import com.payline.payment.oney.bean.common.payment.BusinessTransactionData;
 import com.payline.payment.oney.bean.common.payment.PaymentData;
+import com.payline.payment.oney.service.BeanAssembleService;
+import com.payline.payment.oney.service.impl.BeanAssemblerServiceImpl;
+import com.payline.payment.oney.utils.PluginUtils;
+import com.payline.payment.oney.utils.TestUtils;
+import com.payline.pmapi.bean.payment.request.PaymentRequest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+
+import java.math.BigInteger;
+import java.util.Currency;
 
 import static com.payline.payment.oney.utils.BeanUtils.createDefaultBusinessTransactionData;
 import static com.payline.payment.oney.utils.TestUtils.CONFIRM_AMOUNT;
-import static com.payline.payment.oney.utils.TestUtils.createCompletePaymentBuilder;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class PaymentDataTest {
 
     private PaymentData paymentdata;
+
+    private BeanAssembleService beanAssembleService;
+
+    private PaymentRequest paymentRequest;
+
+
+    @BeforeAll
+    public void setUp() {
+        beanAssembleService = BeanAssemblerServiceImpl.getInstance();
+        paymentRequest = TestUtils.createDefaultPaymentRequest();
+    }
 
     @Test
     public void paymentDataOK() {
@@ -27,11 +49,15 @@ public class PaymentDataTest {
 
     @Test
     public void paymentDataFromPayline() {
-        paymentdata = PaymentData.Builder.aPaymentData()
-                .fromPayline(createCompletePaymentBuilder().build())
-                .build();
+        final BusinessTransactionData businessTransaction = beanAssembleService.assembleBuisnessTransactionData(paymentRequest);
+        paymentdata = beanAssembleService.assemblePaymentData(paymentRequest, businessTransaction);
+//        paymentdata = PaymentData.Builder.aPaymentData()
+//                .fromPayline(createCompletePaymentBuilder().build())
+//                .build();
 
-        Assertions.assertEquals( Float.valueOf(CONFIRM_AMOUNT), paymentdata.getAmount(), 0.001);
+//conversion de l'amount de centimes d'euros  à euros
+        Float paymentAmountConverted  = PluginUtils.createFloatAmount(new BigInteger(CONFIRM_AMOUNT), Currency.getInstance("EUR"));
+        Assertions.assertEquals(paymentAmountConverted, paymentdata.getAmount(), 0.01);
         Assertions.assertEquals("EUR", paymentdata.getCurrency());
     }
 

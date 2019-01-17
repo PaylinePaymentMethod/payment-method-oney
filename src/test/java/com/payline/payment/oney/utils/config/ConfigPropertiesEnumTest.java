@@ -1,25 +1,24 @@
 package com.payline.payment.oney.utils.config;
 
+import com.payline.payment.oney.utils.properties.service.ConfigPropertiesEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ConfigPropertiesTest {
+public class ConfigPropertiesEnumTest {
 
-    private ConfigProperties configProperties;
     private String key;
-
 
 
     @Test
     public void getFromKeyKO() {
-        key = ConfigProperties.get("BadKey");
+        key = ConfigPropertiesEnum.INSTANCE.get("BadKey");
         Assertions.assertNull(key);
 
     }
 
     @Test
     public void getFromKeyOK() {
-        key = ConfigProperties.get("paymentMethod.name");
+        key = ConfigPropertiesEnum.INSTANCE.get("http.connectTimeout");
         Assertions.assertNotNull(key);
     }
 

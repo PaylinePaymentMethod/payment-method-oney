@@ -1,10 +1,15 @@
 package com.payline.payment.oney.common.bean;
 
 import com.payline.payment.oney.bean.common.purchase.Purchase;
+import com.payline.payment.oney.utils.PluginUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
+import java.util.Currency;
+
 import static com.payline.payment.oney.utils.BeanUtils.*;
+import static com.payline.payment.oney.utils.TestUtils.CONFIRM_AMOUNT;
 import static com.payline.payment.oney.utils.TestUtils.createCompletePaymentBuilder;
 
 public class PurchaseTest {
@@ -32,6 +37,9 @@ public class PurchaseTest {
         purchase = Purchase.Builder.aPurchaseBuilder()
                 .fromPayline(createCompletePaymentBuilder().build())
                 .build();
+
+        Float paymentAmountConverted  = PluginUtils.createFloatAmount(new BigInteger(CONFIRM_AMOUNT), Currency.getInstance("EUR"));
+        Assertions.assertEquals(paymentAmountConverted, purchase.getPurchaseAmount(),0.01);
 
         //Test to String here
         Assertions.assertTrue(purchase.toString().contains("external_reference"));

@@ -50,7 +50,7 @@ public class OneyCryptoTest {
     }
 
     @Test
-    public void encryptWrongKey() throws DecryptException {
+    public void encryptWrongKey() {
 
         Throwable exception = Assertions.assertThrows(DecryptException.class, () -> {
             crypto = new OneyCrypto("maCle");

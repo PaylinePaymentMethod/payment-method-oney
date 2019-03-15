@@ -65,14 +65,6 @@ public class BusinessTransactionData extends OneyBean {
             return this;
         }
 
-        public BusinessTransactionData.Builder verifyIntegrity() throws InvalidFieldFormatException {
-            if (this.code == null) {
-                throw new InvalidFieldFormatException("BusinessTransactionData must have a code when built", "BusinessTransactionData.code");
-            }
-
-            return this;
-        }
-
         public BusinessTransactionData.Builder fromPayline(ContractConfiguration contract) throws InvalidFieldFormatException {
 
             if (contract == null) {
@@ -93,8 +85,8 @@ public class BusinessTransactionData extends OneyBean {
             return this;
         }
 
-        public BusinessTransactionData build() throws InvalidFieldFormatException {
-            return new BusinessTransactionData(this.verifyIntegrity());
+        public BusinessTransactionData build() {
+            return new BusinessTransactionData(this);
         }
     }
 }

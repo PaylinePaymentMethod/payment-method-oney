@@ -2,7 +2,6 @@ package com.payline.payment.oney.bean.common;
 
 import com.payline.payment.oney.bean.common.purchase.Item;
 import com.payline.payment.oney.bean.common.purchase.Travel;
-import com.payline.payment.oney.exception.InvalidDataException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -37,126 +36,6 @@ public class ItemTest {
         Assertions.assertNotNull(item.getPrice());
         Assertions.assertNotNull(item.getMarketplaceFlag());
         Assertions.assertNotNull(item.getQuantity());
-    }
-
-    @Test
-    public void withoutLabel() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            item = Item.Builder.aItemBuilder()
-                    .withMainItem(0)
-                    .withCategoryCode(0)
-                    .withPrice(175F)
-                    .withMarketplaceFlag(0)
-                    .withQuantity(5)
-                    .withItemExternalCode("externalCode")
-                    .build();
-        });
-        Assertions.assertEquals("Item must have a label when built", exception.getMessage());
-
-    }
-
-    @Test
-    public void withoutIsMainItem() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            item = Item.Builder.aItemBuilder()
-                    .withCategoryCode(0)
-                    .withLabel("label")
-                    .withPrice(175F)
-                    .withMarketplaceFlag(0)
-                    .withQuantity(5)
-                    .withItemExternalCode("externalCode")
-                    .build();
-        });
-        Assertions.assertEquals("Item must have a isMainItem when built", exception.getMessage());
-
-    }
-
-    @Test
-    public void withoutCategoryCode() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            item = Item.Builder.aItemBuilder()
-                    .withMainItem(0)
-                    .withLabel("label")
-                    .withPrice(175F)
-                    .withMarketplaceFlag(0)
-                    .withQuantity(5)
-                    .withItemExternalCode("externalCode")
-                    .build();
-        });
-        Assertions.assertEquals("Item must have a categoryCode when built", exception.getMessage());
-
-    }
-
-    @Test
-    public void withoutItemexternalCode() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            item = Item.Builder.aItemBuilder()
-                    .withMainItem(0)
-                    .withCategoryCode(0)
-                    .withLabel("label")
-                    .withPrice(175F)
-                    .withMarketplaceFlag(0)
-                    .withQuantity(5)
-                    .build();
-        });
-        Assertions.assertEquals("Item must have a itemExternalcode when built", exception.getMessage());
-
-    }
-
-    @Test
-    public void withoutQuantity() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            item = Item.Builder.aItemBuilder()
-                    .withMainItem(0)
-                    .withCategoryCode(0)
-                    .withLabel("label")
-                    .withPrice(175F)
-                    .withMarketplaceFlag(0)
-                    .withItemExternalCode("externalCode")
-                    .build();
-        });
-        Assertions.assertEquals("Item must have a quantity when built", exception.getMessage());
-
-    }
-
-    @Test
-    public void withoutPrice() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            item = Item.Builder.aItemBuilder()
-                    .withMainItem(0)
-                    .withCategoryCode(0)
-                    .withLabel("label")
-                    .withMarketplaceFlag(0)
-                    .withQuantity(5)
-                    .withItemExternalCode("externalCode")
-                    .build();
-        });
-        Assertions.assertEquals("Item must have a price when built", exception.getMessage());
-
-    }
-
-    @Test
-    public void withoutMarketPlaceName() throws Exception {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            item = Item.Builder.aItemBuilder()
-                    .withMainItem(0)
-                    .withCategoryCode(0)
-                    .withLabel("label")
-                    .withPrice(175F)
-                    .withMarketplaceFlag(1)
-                    .withQuantity(5)
-                    .withItemExternalCode("externalCode")
-                    .build();
-        });
-        Assertions.assertEquals("Item with marketplaceFlag == 1 must have a marketplaceName when built", exception.getMessage());
-
     }
 
     @Test

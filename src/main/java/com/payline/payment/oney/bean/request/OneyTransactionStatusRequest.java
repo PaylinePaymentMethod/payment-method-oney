@@ -1,7 +1,5 @@
 package com.payline.payment.oney.bean.request;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.service.impl.RequestConfigServiceImpl;
@@ -101,32 +99,8 @@ public class OneyTransactionStatusRequest extends ParameterizedUrlOneyRequest {
                     .withCallParameters(PluginUtils.getParametersMap(refundRequest));
         }
 
-        private OneyTransactionStatusRequest.Builder verifyIntegrity() throws InvalidDataException {
-            if (this.merchantGuid == null) {
-                throw new InvalidDataException("OneyTransactionStatusRequest must have a merchantGuid when built", "OneyTransactionStatusRequest.merchantGuid");
-            }
-
-            if (this.pspGuid == null) {
-                throw new InvalidDataException("OneyTransactionStatusRequest must have a pspGuid when built", "OneyTransactionStatusRequest.pspGuid");
-            }
-
-            if (this.purchaseReference == null) {
-                throw new InvalidDataException("OneyTransactionStatusRequest must have a reference when built", "OneyTransactionStatusRequest.reference");
-            }
-
-            if (this.encryptKey == null) {
-                throw new InvalidDataException("OneyConfirmRequest must have a encryptKey when built", "OneyTransactionStatusRequest.encryptKey");
-            }
-
-            if (this.callParameters == null || callParameters.isEmpty()) {
-                throw new InvalidDataException("OneyTransactionStatusRequest must have a callParameters when built", "OneyTransactionStatusRequest.callParameters");
-            }
-
-            return this;
-        }
-
-        public OneyTransactionStatusRequest build() throws InvalidDataException {
-            return new OneyTransactionStatusRequest(this.verifyIntegrity());
+        public OneyTransactionStatusRequest build() {
+            return new OneyTransactionStatusRequest(this);
         }
 
     }

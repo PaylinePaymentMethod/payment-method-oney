@@ -1,6 +1,5 @@
 package com.payline.payment.oney.bean.common;
 
-import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.service.BeanAssembleService;
 import com.payline.payment.oney.service.impl.BeanAssemblerServiceImpl;
 import com.payline.payment.oney.utils.TestUtils;
@@ -42,23 +41,7 @@ public class NavigationDataTest {
     }
 
     @Test
-    public void buildNavigationDataFail() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            navigationData = NavigationData.Builder.aNavigationDataBuilder()
-                    .withFailUrl("fail/url/")
-                    .withNotificationUrl("notification/url/")
-                    .withPendingUrl("pending/url/")
-                    .build();
-        });
-        Assertions.assertEquals("NavigationData must have a successUrl when built", exception.getMessage());
-
-
-    }
-
-    @Test
     public void buildNavigationDataFromPayline() throws Exception {
-
         navigationData = beanAssembleService.assembleNavigationData(paymentRequest);
 
         Assertions.assertEquals("http://google.com/", navigationData.getNotificationUrl());
@@ -66,7 +49,6 @@ public class NavigationDataTest {
         Assertions.assertEquals("https://succesurl.com/", navigationData.getSuccessUrl());
         Assertions.assertEquals("http://localhost/cancelurl.com/", navigationData.getFailUrl());
     }
-
 
     @Test
     public void toStringTest() throws Exception {
@@ -77,6 +59,5 @@ public class NavigationDataTest {
         Assertions.assertTrue(navigationData.toString().contains("fail_url"));
         Assertions.assertTrue(navigationData.toString().contains("server_response_url"));
         Assertions.assertTrue(navigationData.toString().contains("alternative_return_url"));
-
     }
 }

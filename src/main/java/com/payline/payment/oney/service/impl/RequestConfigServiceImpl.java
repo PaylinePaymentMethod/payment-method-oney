@@ -31,7 +31,7 @@ public enum RequestConfigServiceImpl implements RequestConfigService {
     /**
      * Map of all Contract or Partner parameters
      */
-    private static final Map<String, PaylineParameterType> PARAMETERS_MAP = new HashMap<String, PaylineParameterType>();
+    private static final Map<String, PaylineParameterType> PARAMETERS_MAP = new HashMap<>();
 
     static {
         PARAMETERS_MAP.put(OneyConstants.MERCHANT_GUID_KEY, PaylineParameterType.CONTRACT_CONFIGURATION_PARAMETER);

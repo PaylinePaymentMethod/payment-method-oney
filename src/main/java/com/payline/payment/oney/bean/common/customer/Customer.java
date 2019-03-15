@@ -3,8 +3,6 @@ package com.payline.payment.oney.bean.common.customer;
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyAddress;
 import com.payline.payment.oney.bean.common.OneyBean;
-import com.payline.payment.oney.exception.InvalidDataException;
-import com.payline.payment.oney.exception.PluginTechnicalException;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.common.Buyer;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
@@ -77,7 +75,7 @@ public class Customer extends OneyBean {
     private Customer() {
     }
 
-    public Customer(Customer.Builder builder) {
+    private Customer(Customer.Builder builder) {
         this.trustFlag = builder.trustFlag;
         this.customerExternalCode = builder.customerExternalCode;
         this.languageCode = builder.languageCode;
@@ -86,7 +84,6 @@ public class Customer extends OneyBean {
         this.customerAddress = builder.customerAddress;
         this.purchaseHistory = builder.purchaseHistory;
         this.supportingDocuments = builder.supportingDocuments;
-
     }
 
     public static class Builder {
@@ -139,32 +136,7 @@ public class Customer extends OneyBean {
             return this;
         }
 
-        private Customer.Builder verifyIntegrity() throws InvalidDataException {
-
-            if (this.customerExternalCode == null) {
-                throw new InvalidDataException("Customer must have a customerExternalCode when built", "Customer.customerExternalCode");
-            }
-
-            if (this.languageCode == null) {
-                throw new InvalidDataException("Customer must have a languageCode when built", "Customer.languageCode");
-            }
-
-            if (this.identity == null) {
-                throw new InvalidDataException("Customer must have a identity when built", "Customer.identity");
-            }
-
-            if (this.contactDetails == null) {
-                throw new InvalidDataException("Customer must have a contactDetails when built", "Customer.contactDetails");
-            }
-
-            if (this.customerAddress == null) {
-                throw new InvalidDataException("Customer must have a customerAddress when built", "Customer.customerAddress");
-            }
-            return this;
-
-        }
-
-        public Customer.Builder fromPaylineRequest(PaymentRequest request) throws PluginTechnicalException {
+        public Customer.Builder fromPaylineRequest(PaymentRequest request) {
             this.trustFlag = null;
             Buyer buyer = request.getBuyer();
             if (buyer == null) {
@@ -184,8 +156,8 @@ public class Customer extends OneyBean {
             return this;
         }
 
-        public Customer build() throws InvalidDataException {
-            return new Customer(this.verifyIntegrity());
+        public Customer build() {
+            return new Customer(this);
         }
     }
 }

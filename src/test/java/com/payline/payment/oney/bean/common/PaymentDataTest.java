@@ -3,7 +3,6 @@ package com.payline.payment.oney.bean.common;
 import com.payline.payment.oney.bean.common.enums.PaymentType;
 import com.payline.payment.oney.bean.common.payment.BusinessTransactionData;
 import com.payline.payment.oney.bean.common.payment.PaymentData;
-import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.service.BeanAssembleService;
 import com.payline.payment.oney.service.impl.BeanAssemblerServiceImpl;
 import com.payline.payment.oney.utils.PluginUtils;
@@ -63,57 +62,6 @@ public class PaymentDataTest {
     }
 
     @Test
-    public void paymentDataFailAmount() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            paymentdata = PaymentData.Builder.aPaymentData()
-                    .withCurrency("EUR")
-                    .withBusinessTransactionList(createDefaultBusinessTransactionData("254"))
-                    .build();
-        });
-        Assertions.assertEquals("PaymentData must have a amount when built", exception.getMessage());
-
-
-    }
-
-    @Test
-    public void paymentDataFailCurrency() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            paymentdata = PaymentData.Builder.aPaymentData()
-                    .withAmount(100)
-                    .withBusinessTransactionList(createDefaultBusinessTransactionData("254"))
-                    .build();
-        });
-        Assertions.assertEquals("PaymentData must have a currency when built", exception.getMessage());
-
-    }
-
-
-    @Test
-    public void paymentDataFailBusinessTransactionData() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            paymentdata = PaymentData.Builder.aPaymentData()
-                    .withAmount(100)
-                    .withCurrency("EUR")
-                    .build();
-        });
-        Assertions.assertEquals("PaymentData must have a businessTransaction when built", exception.getMessage());
-
-    }
-
-    @Test
-    public void paymentDataOKWithoutBusinessTransactionData() throws Exception {
-        paymentdata = PaymentData.Builder.aPaymentData()
-                .withAmount(100)
-                .withPaymentType(PaymentType.CHECK_CARD.getValue())
-                .withCurrency("EUR")
-                .build();
-        Assertions.assertNotNull(paymentdata);
-    }
-
-    @Test
     public void toStringTest() throws Exception {
         paymentdata = PaymentData.Builder.aPaymentData()
                 .withAmount(100)
@@ -126,8 +74,6 @@ public class PaymentDataTest {
         Assertions.assertTrue(paymentdata.toString().contains("currency_code"));
         Assertions.assertTrue(paymentdata.toString().contains("payment_type"));
         Assertions.assertTrue(paymentdata.toString().contains("business_transaction"));
-
-
     }
 
 }

@@ -1,7 +1,6 @@
 package com.payline.payment.oney.bean.common;
 
 import com.google.gson.annotations.SerializedName;
-import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.common.Buyer;
 
@@ -164,26 +163,6 @@ public class OneyAddress extends OneyBean {
             return this;
         }
 
-        private OneyAddress.Builder checkIntegrity() throws InvalidDataException {
-            if (this.line1 == null) {
-                throw new InvalidDataException("OneyAddress must have a line1 when built", "OneyAddress.line1");
-            }
-            if (this.countryLabel == null) {
-                throw new InvalidDataException("OneyAddress must have a countryLabel when built", "OneyAddress.countryLabel");
-            }
-            if (this.postalCode == null) {
-                throw new InvalidDataException("OneyAddress must have a postalCode when built", "OneyAddress.postalCode");
-            }
-            if (this.municipality == null) {
-                throw new InvalidDataException("OneyAddress must have a municipality when built", "OneyAddress.municipality");
-            }
-            if (this.countryCode == null) {
-                throw new InvalidDataException("OneyAddress must have a countryCode when built", "OneyAddress.countryCode");
-            }
-            return this;
-
-        }
-
         public Builder fromPayline(Buyer buyer, Buyer.AddressType addressType) {
             if (buyer == null) {
                 return null;
@@ -224,8 +203,8 @@ public class OneyAddress extends OneyBean {
             }
         }
 
-        public OneyAddress build() throws InvalidDataException {
-            return new OneyAddress(this.checkIntegrity());
+        public OneyAddress build() {
+            return new OneyAddress(this);
         }
     }
 

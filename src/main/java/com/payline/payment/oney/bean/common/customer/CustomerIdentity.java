@@ -2,10 +2,6 @@ package com.payline.payment.oney.bean.common.customer;
 
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyBean;
-import com.payline.payment.oney.exception.InvalidDataException;
-import com.payline.payment.oney.exception.InvalidFieldFormatException;
-import com.payline.payment.oney.exception.PluginTechnicalException;
-import com.payline.payment.oney.utils.OneyConstants;
 import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.common.Buyer;
@@ -115,7 +111,7 @@ public class CustomerIdentity extends OneyBean {
     private CustomerIdentity() {
     }
 
-    public CustomerIdentity(CustomerIdentity.Builder builder) {
+    private CustomerIdentity(CustomerIdentity.Builder builder) {
         this.taxpayerCode = builder.taxpayerCode;
         this.personType = builder.personType;
         this.honorificCode = builder.honorificCode;
@@ -248,33 +244,8 @@ public class CustomerIdentity extends OneyBean {
             return this;
         }
 
-        private CustomerIdentity.Builder verifyIntegrity() throws InvalidDataException {
-
-            if (this.personType == null) {
-                throw new InvalidDataException("CustomerIdentity must have a personType when built", "CustomerIdentity.personType");
-            }
-
-            if (this.honorificCode == null) {
-                throw new InvalidDataException("CustomerIdentity must have a honorificCode when built", "CustomerIdentity.honorificCode");
-            }
-
-            if (this.birthName == null) {
-                throw new InvalidDataException("CustomerIdentity must have a birthName when built", "CustomerIdentity.birthName");
-            }
-
-            if (this.firstName == null) {
-                throw new InvalidDataException("CustomerIdentity must have a firstName when built", "CustomerIdentity.firstName");
-            }
-
-            if (this.birthDate != null && !this.birthDate.matches(OneyConstants.DATE_FORMAT)) {
-                throw new InvalidFieldFormatException("CustomerIdentity must have a birthDate in format 'yyyy-MM-dd' when built", "CustomerIdentity.birthDate");
-            }
-            return this;
-
-        }
-
-        public CustomerIdentity build() throws PluginTechnicalException {
-            return new CustomerIdentity(this.verifyIntegrity());
+        public CustomerIdentity build() {
+            return new CustomerIdentity(this);
         }
     }
 }

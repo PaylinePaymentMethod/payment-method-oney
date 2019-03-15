@@ -2,8 +2,6 @@ package com.payline.payment.oney.bean.common.purchase;
 
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyBean;
-import com.payline.payment.oney.exception.InvalidDataException;
-import com.payline.payment.oney.exception.PluginTechnicalException;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.common.Amount;
 import com.payline.pmapi.bean.payment.Order;
@@ -142,7 +140,7 @@ public class Purchase extends OneyBean {
         }
 
 
-        public Purchase.Builder fromPayline(PaymentRequest request) throws PluginTechnicalException {
+        public Purchase.Builder fromPayline(PaymentRequest request) {
             this.externalReferenceType = EXTERNAL_REFERENCE_TYPE;
             if (request != null) {
                 Order order = request.getOrder();
@@ -176,42 +174,8 @@ public class Purchase extends OneyBean {
             return this;
         }
 
-        private Purchase.Builder checkIntegrity() throws InvalidDataException {
-
-            if (this.externalReferenceType == null) {
-                throw new InvalidDataException("Purchase must have a externalReferenceType when built", "Purchase.externalReferenceType");
-            }
-
-            if (this.externalReference == null) {
-                throw new InvalidDataException("Purchase must have a externalReference when built", "Purchase.externalReference");
-            }
-
-            if (this.purchaseAmount == null) {
-                throw new InvalidDataException("Purchase must have a purchaseAmount when built", "Purchase.purchaseAmount");
-            }
-
-            if (this.currencyCode == null) {
-                throw new InvalidDataException("Purchase must have a currencyCode when built", "Purchase.currencyCode");
-            }
-
-            if (this.delivery == null) {
-                throw new InvalidDataException("Purchase must have a delivery when built", "Purchase.delivery");
-            }
-
-            if (this.numberOfItems == null) {
-                throw new InvalidDataException("Purchase must have a numberOfItems when built", "Purchase.numberOfItems");
-            }
-
-            if (this.listItem == null || this.listItem.isEmpty()) {
-                throw new InvalidDataException("Purchase must have a listItem when built", "Purchase.listItem");
-            }
-
-            return this;
-        }
-
-
-        public Purchase build() throws InvalidDataException {
-            return new Purchase(this.checkIntegrity());
+        public Purchase build() {
+            return new Purchase(this);
         }
     }
 }

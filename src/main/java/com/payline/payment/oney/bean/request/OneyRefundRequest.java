@@ -131,41 +131,8 @@ public class OneyRefundRequest extends ParameterizedUrlOneyRequest {
             return this;
         }
 
-        private OneyRefundRequest.Builder verifyIntegrity() throws InvalidDataException {
-            if (this.merchantGuid == null) {
-                throw new InvalidDataException("OneyRefundRequest must have a merchantGuid when built", "OneyRefundRequest.merchantGuid");
-            }
-
-            if (this.merchantRequestId == null) {
-                throw new InvalidDataException("OneyRefundRequest must have a merchantRequestId when built", "OneyRefundRequest.merchantRequestId");
-            }
-
-            if (this.pspGuid == null) {
-                throw new InvalidDataException("OneyRefundRequest must have a pspGuid when built", "OneyRefundRequest.pspGuid");
-            }
-
-            if (this.purchaseReference == null) {
-                throw new InvalidDataException("OneyRefundRequest must have a reference when built", "OneyRefundRequest.reference");
-            }
-
-            if (this.purchase == null) {
-                throw new InvalidDataException("OneyRefundRequest must have a purchase when built", "OneyRefundRequest.purchase");
-            }
-
-            if (this.encryptKey == null) {
-                throw new InvalidDataException("OneyRefundRequest must have a encryptKey when built", "OneyRefundRequest.encryptKey");
-            }
-
-            if (this.callParameters == null || callParameters.isEmpty()) {
-                throw new InvalidDataException("OneyRefundRequest must have a callParameters when built", "OneyRefundRequest.callParameters");
-            }
-
-            return this;
-
-        }
-
-        public OneyRefundRequest build() throws InvalidDataException {
-            return new OneyRefundRequest(this.verifyIntegrity());
+        public OneyRefundRequest build() {
+            return new OneyRefundRequest(this);
         }
 
     }

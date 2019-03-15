@@ -99,42 +99,8 @@ public class OneyConfirmRequest extends ParameterizedUrlOneyRequest {
             this.callParameters = PluginUtils.getParametersMap(transactionStatusRequest);
         }
 
-        public OneyConfirmRequest build() throws InvalidDataException {
-            this.verifyIntegrity();
+        public OneyConfirmRequest build() {
             return new OneyConfirmRequest(this);
-        }
-
-
-        private void verifyIntegrity() throws InvalidDataException {
-
-            if (this.merchantGuid == null) {
-                throw new InvalidDataException("OneyConfirmRequest must have a merchantGuid when built", "OneyConfirmRequest.merchantGuid");
-            }
-
-            if (this.merchantRequestId == null) {
-                throw new InvalidDataException("OneyConfirmRequest must have a merchantRequestId when built", "OneyConfirmRequest.merchantRequestId");
-            }
-
-            if (this.pspGuid == null) {
-                throw new InvalidDataException("OneyConfirmRequest must have a pspGuid when built", "OneyConfirmRequest.pspGuid");
-            }
-
-            if (this.purchaseReference == null) {
-                throw new InvalidDataException("OneyConfirmRequest must have a reference when built", "OneyConfirmRequest.reference");
-            }
-
-            if (this.paymentData == null) {
-                throw new InvalidDataException("OneyConfirmRequest must have a paymentData when built", "OneyConfirmRequest.paymentData");
-            }
-
-            if (this.encryptKey == null) {
-                throw new InvalidDataException("OneyConfirmRequest must have a encryptKey when built", "OneyConfirmRequest.encryptKey");
-            }
-
-            if (this.callParameters == null || callParameters.isEmpty()) {
-                throw new InvalidDataException("OneyConfirmRequest must have a callParameters when built", "OneyConfirmRequest.callParameters");
-            }
-
         }
 
     }

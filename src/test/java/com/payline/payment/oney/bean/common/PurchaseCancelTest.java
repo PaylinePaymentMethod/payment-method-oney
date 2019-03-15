@@ -1,6 +1,5 @@
 package com.payline.payment.oney.bean.common;
 
-import com.payline.payment.oney.exception.InvalidDataException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,57 +30,6 @@ public class PurchaseCancelTest {
         Assertions.assertNotNull(purchaseCancel);
     }
 
-
-    @Test
-    public void withoutReasonCode() {
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-
-            purchaseCancel = PurchaseCancel.Builder.aPurchaseCancelBuilder()
-                    .withRefundFlag(true)
-                    .withAmount(Float.valueOf("25"))
-                    .build();
-        });
-        Assertions.assertEquals("PurchaseCancel must have a valid reasonCode when built", exception.getMessage());
-
-    }
-
-    @Test
-    public void withInvalidReasonCode() {
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-
-            purchaseCancel = PurchaseCancel.Builder.aPurchaseCancelBuilder()
-                    .withRefundFlag(true)
-                    .withReasonCode(4)
-                    .withAmount(Float.valueOf("25"))
-                    .build();
-        });
-        Assertions.assertEquals("PurchaseCancel must have a valid reasonCode when built", exception.getMessage());
-    }
-
-    @Test
-    public void withoutRefundFlag() {
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-
-            purchaseCancel = PurchaseCancel.Builder.aPurchaseCancelBuilder()
-                    .withReasonCode(1)
-                    .withAmount(Float.valueOf("25"))
-                    .build();
-        });
-        Assertions.assertEquals("PurchaseCancel must have a refundFlag when built", exception.getMessage());
-    }
-
-    @Test
-    public void withoutAmount() {
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-
-            purchaseCancel = PurchaseCancel.Builder.aPurchaseCancelBuilder()
-                    .withRefundFlag(true)
-                    .withReasonCode(0)
-                    .build();
-        });
-        Assertions.assertEquals("PurchaseCancel must have a amount when built", exception.getMessage());
-    }
-
     @Test
     public void testToString() throws Exception {
         purchaseCancel = PurchaseCancel.Builder.aPurchaseCancelBuilder()
@@ -93,7 +41,5 @@ public class PurchaseCancelTest {
         Assertions.assertTrue(purchaseCancel.toString().contains("refund_down_payment"));
         Assertions.assertTrue(purchaseCancel.toString().contains("cancellation_reason_code"));
         Assertions.assertTrue(purchaseCancel.toString().contains("cancellation_amount"));
-
-
     }
 }

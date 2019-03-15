@@ -40,49 +40,6 @@ public class NotificationServiceTest extends OneyConfigBean {
     }
 
     @Test
-    public void notifyTransactionStatusRequestTest_nullEncryptKey() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            StringResponse responseMockedPending = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ul3aakmok0anPtpBvW1vZ3e83c7evaIMgKsuqlJpPjg407AoMkFm94736cZcnpC81qiX4V8n9IxMD1E50QBAOkMZ1S8Pf90kxhXSDe3wt4J13\"}");
-            StringResponse responseMockedFavorable = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ul/bQBJ3C1/cyjmvmAAmMq9gLttO54jS+b/UB/MPwY6YeiFWc7TtYNuIHJF3Grkl2/O4B6r4zkTpus9DrEZIou4aE8tfX+G43n2zFDAoYG3u3\"}");
-
-            Mockito.doReturn(responseMockedPending).when(httpClient).doGet(Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap());
-
-
-            OneyTransactionStatusRequest request = OneyTransactionStatusRequest.Builder.aOneyGetStatusRequest()
-                    .withLanguageCode("FR")
-                    .withMerchantGuid("9813e3ff-c365-43f2-8dca-94b850befbf9")
-                    .withPspGuid("6ba2a5e2-df17-4ad7-8406-6a9fc488a60a")
-                    .withPurchaseReference(OneyConstants.EXTERNAL_REFERENCE_TYPE + OneyConstants.PIPE + "455454545415451198119")
-                    .withEncryptKey("66s581CG5W+RLEqZHAGQx+vskjy660Kt8x8rhtRpXtY=")
-                    .build();
-        });
-
-    }
-
-    @Test
-    public void notifyTransactionStatusRequestTest_emptyEncryptKey() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            StringResponse responseMockedPending = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ul3aakmok0anPtpBvW1vZ3e83c7evaIMgKsuqlJpPjg407AoMkFm94736cZcnpC81qiX4V8n9IxMD1E50QBAOkMZ1S8Pf90kxhXSDe3wt4J13\"}");
-            StringResponse responseMockedFavorable = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ul/bQBJ3C1/cyjmvmAAmMq9gLttO54jS+b/UB/MPwY6YeiFWc7TtYNuIHJF3Grkl2/O4B6r4zkTpus9DrEZIou4aE8tfX+G43n2zFDAoYG3u3\"}");
-
-            Mockito.doReturn(responseMockedPending).when(httpClient).doGet(Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap());
-
-
-            OneyTransactionStatusRequest request = OneyTransactionStatusRequest.Builder.aOneyGetStatusRequest()
-                    .withLanguageCode("FR")
-                    .withMerchantGuid("9813e3ff-c365-43f2-8dca-94b850befbf9")
-                    .withPspGuid("6ba2a5e2-df17-4ad7-8406-6a9fc488a60a")
-                    .withPurchaseReference(OneyConstants.EXTERNAL_REFERENCE_TYPE + OneyConstants.PIPE + "455454545415451198119")
-                    .withEncryptKey("66s581CG5W+RLEqZHAGQx+vskjy660Kt8x8rhtRpXtY=")
-                    .withCallParameters(new HashMap<>())
-                    .build();
-        });
-
-    }
-
-    @Test
     public void notifyTransactionStatusRequestEncrypted() throws Exception {
 
         Map<String, String> map = new HashMap<>();

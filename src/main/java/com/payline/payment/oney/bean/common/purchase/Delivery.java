@@ -4,10 +4,6 @@ import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyAddress;
 import com.payline.payment.oney.bean.common.OneyBean;
 import com.payline.payment.oney.bean.common.enums.AddressType;
-import com.payline.payment.oney.exception.InvalidDataException;
-import com.payline.payment.oney.exception.InvalidFieldFormatException;
-import com.payline.payment.oney.exception.PluginTechnicalException;
-import com.payline.payment.oney.utils.OneyConstants;
 import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.common.Buyer;
@@ -134,37 +130,7 @@ public class Delivery extends OneyBean {
             return this;
         }
 
-        private Delivery.Builder verifyIntegrity() throws InvalidDataException {
-
-            if (this.deliveryModeCode == null) {
-                throw new InvalidDataException("Delivery must have a deliveryModeCode when built", "Delivery.deliveryModeCode");
-            }
-
-            if (this.deliveryDate == null) {
-                throw new InvalidDataException("Delivery must have a deliveryDate in format 'yyyy-MM-dd' when built", "Delivery.deliveryDate");
-            } else if (!this.deliveryDate.matches(OneyConstants.DATE_FORMAT)) {
-                throw new InvalidFieldFormatException("Delivery must have a deliveryDate in format 'yyyy-MM-dd' when built", "Delivery.deliveryDate");
-            }
-
-            if (this.deliveryOption == null) {
-                throw new InvalidDataException("Delivery must have a deliveryOption when built", "Delivery.deliveryOption");
-            }
-
-            if (this.addressType == null) {
-                throw new InvalidDataException("Delivery must have a addressType when built", "Delivery.addressType");
-            }
-
-            if (this.deliveryAddress == null) {
-                throw new InvalidDataException("Delivery must have a deliveryAddress when built", "Delivery.deliveryAddress");
-            }
-
-            if (this.addressType == 5 && this.recipient == null) {
-                throw new InvalidDataException("Delivery with addressType == 5 must have a recipient when built", "Delivery.recipient");
-            }
-            return this;
-        }
-
-        public Delivery.Builder fromPayline(PaymentRequest request) throws InvalidDataException {
+        public Delivery.Builder fromPayline(PaymentRequest request) {
 
             Order order = request.getOrder();
             if (order != null) {
@@ -189,8 +155,8 @@ public class Delivery extends OneyBean {
             return this;
         }
 
-        public Delivery build() throws PluginTechnicalException {
-            return new Delivery(this.verifyIntegrity());
+        public Delivery build() {
+            return new Delivery(this);
         }
 
     }

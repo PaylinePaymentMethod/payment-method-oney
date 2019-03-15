@@ -2,7 +2,6 @@ package com.payline.payment.oney.bean.common.purchase;
 
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyBean;
-import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.common.Buyer;
@@ -97,29 +96,8 @@ public class Recipient extends OneyBean {
             return this;
         }
 
-        private Recipient.Builder verifyIntegrity() throws InvalidDataException {
-
-            if (this.honorificCode == null) {
-                throw new InvalidDataException(" must have a honorificCode when built", "Recipient.honorificCode");
-            }
-
-            if (this.surname == null) {
-                throw new InvalidDataException("Recipient must have a surname when built", "Recipient.surname");
-            }
-
-            if (this.firstName == null) {
-                throw new InvalidDataException("Recipient must have a firstName when built", "Recipient.firstName");
-            }
-
-            if (this.phoneNumber == null) {
-                throw new InvalidDataException("Recipient must have a phoneNumber when built", "Recipient.phoneNumber");
-            }
-            return this;
-
-        }
-
-        public Recipient build() throws InvalidDataException {
-            return new Recipient(this.verifyIntegrity());
+        public Recipient build() {
+            return new Recipient(this);
         }
     }
 }

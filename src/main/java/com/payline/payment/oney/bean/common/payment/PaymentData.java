@@ -3,8 +3,6 @@ package com.payline.payment.oney.bean.common.payment;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyBean;
-import com.payline.payment.oney.bean.common.enums.PaymentType;
-import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.utils.Required;
 
 import java.util.List;
@@ -100,40 +98,11 @@ public class PaymentData extends OneyBean {
             return this;
         }
 
-
-        private PaymentData.Builder verifyIntegrity() throws InvalidDataException {
-
-            if (this.amount == null) {
-                throw new InvalidDataException("PaymentData must have a amount when built", "PaymentData.amount");
-            }
-
-            if (this.currency == null) {
-                throw new InvalidDataException("PaymentData must have a currency when built", "PaymentData.currency");
-            }
-
-            BusinessTransactionData bt = this.businessTransaction;
-            if (businessTransactionList != null && !businessTransactionList.isEmpty()) {
-                bt = businessTransactionList.get(0);
-            }
-
-            if (bt == null && (this.paymentType == null || this.paymentType != PaymentType.CHECK_CARD.getValue())) {
-                throw new InvalidDataException("PaymentData must have a businessTransaction when built", "PaymentData.businessTransaction");
-
-            }
-
-            return this;
-
-
+        public PaymentData build() {
+            return new PaymentData(this);
         }
 
-        public PaymentData build() throws InvalidDataException {
-            return new PaymentData(this.verifyIntegrity());
-        }
-
-        public PaymentData buildForConfirmRequest() throws InvalidDataException {
-            if (this.amount == null) {
-                throw new InvalidDataException("PaymentData must have a amount when built", "PaymentData.amount");
-            }
+        public PaymentData buildForConfirmRequest() {
             return new PaymentData(this);
         }
 

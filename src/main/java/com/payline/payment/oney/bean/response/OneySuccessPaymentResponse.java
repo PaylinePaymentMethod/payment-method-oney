@@ -6,7 +6,6 @@ import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.exception.DecryptException;
 import com.payline.payment.oney.exception.HttpCallException;
 import com.payline.payment.oney.exception.MalformedResponseException;
-import com.payline.payment.oney.exception.PluginTechnicalException;
 import com.payline.payment.oney.utils.properties.service.ConfigPropertiesEnum;
 import com.payline.pmapi.logger.LogManager;
 import org.apache.logging.log4j.Logger;

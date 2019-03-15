@@ -1,7 +1,6 @@
 package com.payline.payment.oney.bean.common;
 
 import com.payline.payment.oney.bean.common.purchase.Purchase;
-import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.utils.OneyConstants;
 import com.payline.payment.oney.utils.PluginUtils;
 import org.junit.jupiter.api.Assertions;
@@ -33,7 +32,6 @@ public class PurchaseTest {
         Assertions.assertNotNull(purchase);
     }
 
-
     @Test
     public void fromPaymentRequest() throws Exception {
         purchase = Purchase.Builder.aPurchaseBuilder()
@@ -49,114 +47,6 @@ public class PurchaseTest {
         Assertions.assertTrue(purchase.toString().contains("currency_code"));
         Assertions.assertTrue(purchase.toString().contains("delivery"));
         Assertions.assertTrue(purchase.toString().contains("item_list"));
-    }
-
-    @Test
-    public void withoutListItem() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            purchase = Purchase.Builder.aPurchaseBuilder()
-                    .withCurrencyCode("EUR")
-                    .withPurchaseAmount(150f)
-                    .withDelivery(createDelivery())
-                    .withExternalReference("externalRef")
-                    .withNumberOfItems(2)
-                    .withExternalReferenceType(OneyConstants.EXTERNAL_REFERENCE_TYPE)
-                    .build();
-        });
-        Assertions.assertEquals("Purchase must have a listItem when built", exception.getMessage());
-
-
-    }
-
-    @Test
-    public void withoutDelivery() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            purchase = Purchase.Builder.aPurchaseBuilder()
-                    .withCurrencyCode("EUR")
-                    .withPurchaseAmount(150f)
-                    .withExternalReference("externalRef")
-                    .withListItem(createItemList())
-                    .withNumberOfItems(2)
-                    .withExternalReferenceType(OneyConstants.EXTERNAL_REFERENCE_TYPE)
-                    .build();
-        });
-        Assertions.assertEquals("Purchase must have a delivery when built", exception.getMessage());
-
-
-    }
-
-    @Test
-    public void withoutExternalReferenceType() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            purchase = Purchase.Builder.aPurchaseBuilder()
-                    .withCurrencyCode("EUR")
-                    .withPurchaseAmount(150f)
-                    .withDelivery(createDelivery())
-                    .withExternalReference("externalRef")
-                    .withListItem(createItemList())
-                    .withNumberOfItems(2)
-                    .build();
-        });
-        Assertions.assertEquals("Purchase must have a externalReferenceType when built", exception.getMessage());
-
-
-    }
-
-    @Test
-    public void withoutExternalReference() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            purchase = Purchase.Builder.aPurchaseBuilder()
-                    .withCurrencyCode("EUR")
-                    .withPurchaseAmount(150f)
-                    .withDelivery(createDelivery())
-                    .withExternalReferenceType(OneyConstants.EXTERNAL_REFERENCE_TYPE)
-                    .withListItem(createItemList())
-                    .withNumberOfItems(2)
-                    .build();
-        });
-        Assertions.assertEquals("Purchase must have a externalReference when built", exception.getMessage());
-
-
-    }
-
-    @Test
-    public void withoutPuchaseAmount() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            purchase = Purchase.Builder.aPurchaseBuilder()
-                    .withCurrencyCode("EUR")
-                    .withDelivery(createDelivery())
-                    .withExternalReference("externalRef")
-                    .withListItem(createItemList())
-                    .withNumberOfItems(2)
-                    .withExternalReferenceType(OneyConstants.EXTERNAL_REFERENCE_TYPE)
-                    .build();
-        });
-        Assertions.assertEquals("Purchase must have a purchaseAmount when built", exception.getMessage());
-
-
-    }
-
-    @Test
-    public void withoutCurrencyCode() {
-
-        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
-            purchase = Purchase.Builder.aPurchaseBuilder()
-                    .withPurchaseAmount(150f)
-                    .withDelivery(createDelivery())
-                    .withExternalReference("externalRef")
-                    .withListItem(createItemList())
-                    .withNumberOfItems(2)
-                    .withExternalReferenceType(OneyConstants.EXTERNAL_REFERENCE_TYPE)
-                    .build();
-        });
-        Assertions.assertEquals("Purchase must have a currencyCode when built", exception.getMessage());
-
-
     }
 
 }

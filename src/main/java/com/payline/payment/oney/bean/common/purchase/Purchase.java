@@ -141,24 +141,24 @@ public class Purchase extends OneyBean {
 
 
         public Purchase.Builder fromPayline(PaymentRequest request) {
-            this.externalReferenceType = EXTERNAL_REFERENCE_TYPE;
+            this.withExternalReferenceType( EXTERNAL_REFERENCE_TYPE);
             if (request != null) {
                 Order order = request.getOrder();
                 if (order != null) {
-                    this.externalReference = order.getReference();
+                    this.withExternalReference(order.getReference());
                     Amount amount = order.getAmount();
                     if (amount != null && amount.getCurrency() != null) {
-                        this.purchaseAmount = createFloatAmount(amount.getAmountInSmallestUnit(), amount.getCurrency());
-                        this.currencyCode = amount.getCurrency().getCurrencyCode();
+                        this.withPurchaseAmount(createFloatAmount(amount.getAmountInSmallestUnit(), amount.getCurrency()));
+                        this.withCurrencyCode(amount.getCurrency().getCurrencyCode());
                     }
 
                 }
 
-                this.delivery = Delivery.Builder.aDeliveryBuilder()
+                this.withDelivery( Delivery.Builder.aDeliveryBuilder()
                         .fromPayline(request)
-                        .build();
+                        .build());
                 List<Order.OrderItem> orderItems = request.getOrder().getItems();
-                this.numberOfItems = orderItems.size();
+                this.withNumberOfItems( orderItems.size());
                 List<Item> listItems = new ArrayList<>();
 
                 for (Order.OrderItem item : orderItems) {
@@ -169,7 +169,7 @@ public class Purchase extends OneyBean {
 
                 //Define the main item
                 Item.defineMainItem(listItems);
-                this.listItem = listItems;
+                this.withListItem( listItems);
             }
             return this;
         }

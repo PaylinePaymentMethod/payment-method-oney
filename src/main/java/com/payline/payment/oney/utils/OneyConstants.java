@@ -99,6 +99,7 @@ public class OneyConstants {
     public static final int HTTP_401 = 401;
     public static final int HTTP_400 = 400;
     public static final int HTTP_404 = 404;
+    public static final int HTTP_409 = 409;
     public static final int HTTP_500 = 500;
 
 

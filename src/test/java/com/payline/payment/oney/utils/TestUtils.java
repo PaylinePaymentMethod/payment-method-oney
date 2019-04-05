@@ -360,7 +360,7 @@ public class TestUtils {
                 .build();
     }
 
-    private static String generateRamdomEmail() {
+    public static String generateRamdomEmail() {
 
         return "testoney." + RandomStringUtils.random(5, true, false) + "@gmail.com";
     }

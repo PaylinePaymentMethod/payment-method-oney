@@ -172,10 +172,10 @@ public class OneyAddress extends OneyBean {
             if (address != null) {
                 this.truncateAddress(address.getStreet1(), address.getStreet2());
 
-                this.municipality = address.getCity();
-                this.postalCode = address.getZipCode();
-                this.countryLabel = getCountryNameCodeFromCountryCode2(address.getCountry());
-                this.countryCode = getIsoAlpha3CodeFromCountryCode2(address.getCountry());
+                this.withMunicipality(address.getCity());
+                this.withPostalCode(address.getZipCode());
+                this.withCountryLabel(getCountryNameCodeFromCountryCode2(address.getCountry()));
+                this.withCountryCode(getIsoAlpha3CodeFromCountryCode2(address.getCountry()));
             }
 
             return this;
@@ -183,7 +183,7 @@ public class OneyAddress extends OneyBean {
 
         // Découpe l'adresse intelligemment
         private void truncateAddress(String street1, String street2) {
-            List<String> addressTruncated = splitLongText( spaceConcat( street1, street2), 38);
+            List<String> addressTruncated = splitLongText(spaceConcat(street1, street2), 38);
             int nbLines = addressTruncated.size();
 
             if (nbLines >= 1) {

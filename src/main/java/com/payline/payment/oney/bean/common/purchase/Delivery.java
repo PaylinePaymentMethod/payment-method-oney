@@ -134,23 +134,23 @@ public class Delivery extends OneyBean {
 
             Order order = request.getOrder();
             if (order != null) {
-                this.deliveryDate = (new SimpleDateFormat("yyyy-MM-dd")).format(order.getExpectedDeliveryDate());
+                this.withDeliveryDate((new SimpleDateFormat("yyyy-MM-dd")).format(order.getExpectedDeliveryDate()));
                 if (request.getOrder() != null) {
-                    this.deliveryModeCode = PluginUtils.getOneyDeliveryModeCode(order.getDeliveryMode());
-                    this.deliveryOption = PluginUtils.getOneyDeliveryOption(order.getDeliveryTime());
+                    this.withDeliveryModeCode(PluginUtils.getOneyDeliveryModeCode(order.getDeliveryMode()));
+                    this.withDeliveryOption(PluginUtils.getOneyDeliveryOption(order.getDeliveryTime()));
                 }
             }
 
             AddressType addressTyp = AddressType.fromPaylineAddressType(Buyer.AddressType.DELIVERY);
             if (addressTyp != null) {
-                this.addressType = addressTyp.getValue();
+                this.withAddressType(addressTyp.getValue()) ;
             }
 
             Buyer buyer = request.getBuyer();
             if (buyer != null) {
-                this.recipient = Recipient.Builder.aRecipientBuilder().fromPayline(buyer).build();
-                this.deliveryAddress = OneyAddress.Builder.aOneyAddressBuilder().fromPayline(buyer, Buyer.AddressType.DELIVERY)
-                        .build();
+                this.withRecipient(Recipient.Builder.aRecipientBuilder().fromPayline(buyer).build());
+                this.withDeliveryAddress(OneyAddress.Builder.aOneyAddressBuilder().fromPayline(buyer, Buyer.AddressType.DELIVERY)
+                        .build());
             }
             return this;
         }

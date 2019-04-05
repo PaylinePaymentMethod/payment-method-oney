@@ -87,11 +87,11 @@ public class Recipient extends OneyBean {
             Buyer.Address deliveryAddress = buyer.getAddressForType(Buyer.AddressType.DELIVERY);
             if (deliveryAddress != null && deliveryAddress.getFullName() != null) {
                 Buyer.FullName fullName = deliveryAddress.getFullName();
-                this.surname = fullName.getLastName();
-                this.firstName = fullName.getFirstName();
-                this.honorificCode = PluginUtils.getHonorificCode(fullName.getCivility());
+                this.withSurname(fullName.getLastName());
+                this.withFirstname(fullName.getFirstName());
+                this.withHonorificCode(PluginUtils.getHonorificCode(fullName.getCivility()));
             }
-            this.phoneNumber = buyer.getPhoneNumberForType(Buyer.PhoneNumberType.BILLING);
+            this.withPhoneNumber( buyer.getPhoneNumberForType(Buyer.PhoneNumberType.BILLING));
 
             return this;
         }

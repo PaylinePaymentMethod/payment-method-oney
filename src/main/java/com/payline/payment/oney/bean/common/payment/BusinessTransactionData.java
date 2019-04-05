@@ -75,7 +75,7 @@ public class BusinessTransactionData extends OneyBean {
                 throw new InvalidFieldFormatException("Property " + OPC_KEY + " doesn't exists", OPC_KEY);
             }
 
-            this.code = contract.getProperty(OPC_KEY).getValue();
+            this.withCode(contract.getProperty(OPC_KEY).getValue());
 
             //optional ajouter dans les contract configuration  v2 ??
             /**

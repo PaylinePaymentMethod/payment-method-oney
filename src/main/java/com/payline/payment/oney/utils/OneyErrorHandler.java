@@ -51,6 +51,9 @@ public class OneyErrorHandler {
             case 400:
                 paylineCause = handleOneyFailureResponseFromCause(failureResponse);
                 break;
+            case 409:
+                paylineCause = FailureCause.INVALID_DATA;
+                break;
             default:
                 paylineCause = FailureCause.PARTNER_UNKNOWN_ERROR;
         }
@@ -77,7 +80,6 @@ public class OneyErrorHandler {
         }
 
         if (failureCause == null || failureCause.isEmpty()) {
-
             LOGGER.warn("Oney error not parsable");
             return FailureCause.PARTNER_UNKNOWN_ERROR;
         }
@@ -98,7 +100,7 @@ public class OneyErrorHandler {
                 break;
 
             default:
-                paylineCause = FailureCause.PARTNER_UNKNOWN_ERROR;
+                paylineCause = FailureCause.INVALID_DATA;
         }
 
         return paylineCause;

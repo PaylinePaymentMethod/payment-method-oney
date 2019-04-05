@@ -46,17 +46,28 @@ public class PluginUtils {
 // ------------  Methodes de mapping entre Oney et Payline  -----------------------
 
 
-    //Mapping methods betwen  Payline and Oney
+    // Mapping methods between  Payline and Oney
+    //
+
+    /**
+     * Mapping Payline Buyer.legalStatus vers Oney personType
+     *
+     * PAYLAPMEXT-147: personType must not be something else than 1 or 2.
+     * The default value is 2.
+     *
+     * @param legalStatus Payline legalStatus
+     * @return Oney personType
+     */
     public static Integer getPersonType(Buyer.LegalStatus legalStatus) {
         switch (legalStatus) {
-            case UNKNOWN:
-                return 0;
             case COMPANY:
                 return 1;
             case PERSON:
                 return 2;
+            case UNKNOWN:
+            default:
+                return 2;
         }
-        return null;
     }
 
     /**

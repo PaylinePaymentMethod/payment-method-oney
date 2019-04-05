@@ -33,4 +33,12 @@ public class ContactDetailsTest {
         Assertions.assertTrue(contactDetails.toString().contains("email_address"));
     }
 
+
+    @Test
+    public void creationWithoutPhone(){
+        contactDetails = ContactDetails.Builder.aContactDetailsBuilder()
+                .withMobilePhoneNumber(null)
+                .build();
+        Assertions.assertEquals("0000000000", contactDetails.getMobilePhoneNumber());
+    }
 }

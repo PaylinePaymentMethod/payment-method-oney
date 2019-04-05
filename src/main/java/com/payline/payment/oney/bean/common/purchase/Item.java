@@ -192,18 +192,18 @@ public class Item extends OneyBean {
             if (item == null) {
                 return null;
             }
-            this.isMainItem = 0;
-            this.categoryCode = findCategory(item.getCategory());
-            this.label = item.getComment(); //or get Brand +" "+ get comment ?
-            this.itemExternalcode = item.getReference();
-            this.quantity = item.getQuantity().intValue();
+            this.withMainItem(0);
+            this.withCategoryCode( findCategory(item.getCategory()));
+            this.withLabel(item.getComment()); //or get Brand +" "+ get comment ?
+            this.withItemExternalCode( item.getReference());
+            this.withQuantity(item.getQuantity().intValue());
             if (item.getAmount() != null) {
-                this.price = createFloatAmount(item.getAmount().getAmountInSmallestUnit(), item.getAmount().getCurrency());
+                this.withPrice(createFloatAmount(item.getAmount().getAmountInSmallestUnit(), item.getAmount().getCurrency()));
             }
             //note HME  mapper selon marketplace lot 2
 //            this.marketplaceFlag = 0;
 //            this.marketplaceName = null;
-            this.travel = null;
+            this.withTravel(null);
 
             return this;
         }

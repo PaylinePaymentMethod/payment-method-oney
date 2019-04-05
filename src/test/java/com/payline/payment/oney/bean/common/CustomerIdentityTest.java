@@ -1,6 +1,7 @@
 package com.payline.payment.oney.bean.common;
 
 import com.payline.payment.oney.bean.common.customer.CustomerIdentity;
+import com.payline.payment.oney.utils.TestUtils;
 import com.payline.pmapi.bean.common.Buyer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -9,12 +10,16 @@ import static com.payline.payment.oney.utils.TestUtils.createDefaultBuyer;
 
 public class CustomerIdentityTest {
 
-    private CustomerIdentity customerIdentity;
-
+    @Test
+    void customerFromPaylineTest() {
+        Buyer buyer = TestUtils.createDefaultBuyer();
+        CustomerIdentity customerIdentity = CustomerIdentity.Builder.aCustomerIdentity().fromPayline(buyer).build();
+        Assertions.assertNull(customerIdentity.getLastName());
+    }
 
     @Test
-    public void customerIdentityTest() throws Exception {
-        customerIdentity = CustomerIdentity.Builder.aCustomerIdentity()
+    public void customerIdentityTest() {
+        CustomerIdentity customerIdentity = CustomerIdentity.Builder.aCustomerIdentity()
                 .withBirthName("Doe")
                 .withPersonType(2)
                 .withHonorificCode(1)
@@ -22,15 +27,15 @@ public class CustomerIdentityTest {
                 //Optinals
                 .withLastName("LN")
                 .withGivenNames("GN")
-                .withBithDate("1990-12-11")
+                .withBirthDate("1990-12-11")
                 .build();
         Assertions.assertNotNull(customerIdentity);
     }
 
     @Test
-    public void fromPaylineBuyer() throws Exception {
+    public void fromPaylineBuyer() {
         Buyer buyer = createDefaultBuyer();
-        customerIdentity = CustomerIdentity.Builder.aCustomerIdentity()
+        CustomerIdentity customerIdentity = CustomerIdentity.Builder.aCustomerIdentity()
                 .fromPayline(buyer)
                 .build();
         Assertions.assertNotNull(customerIdentity.getFirstName());
@@ -41,12 +46,26 @@ public class CustomerIdentityTest {
         Assertions.assertNull(customerIdentity.getGivenNames());
         Assertions.assertNull(customerIdentity.getBirthMunicipalityCode());
         Assertions.assertNull(customerIdentity.getCityzenshipCountryCode());
+    }
 
+    // PAYLAPMEXT-147
+    @Test
+    public void fromPaylineBuyer_noLegalStatus(){
+        Buyer buyer = Buyer.BuyerBuilder.aBuyer()
+                .withEmail(TestUtils.generateRamdomEmail())
+                .withFullName(TestUtils.createFullName())
+                .build();
+
+        CustomerIdentity customerIdentity = CustomerIdentity.Builder.aCustomerIdentity()
+                .fromPayline(buyer)
+                .build();
+
+        Assertions.assertNotNull(  customerIdentity.getPersonType() );
     }
 
     @Test
-    public void testToString() throws Exception {
-        customerIdentity = CustomerIdentity.Builder.aCustomerIdentity()
+    public void testToString() {
+        CustomerIdentity customerIdentity = CustomerIdentity.Builder.aCustomerIdentity()
                 .withBirthName("Doe")
                 .withPersonType(2)
                 .withHonorificCode(1)
@@ -54,7 +73,7 @@ public class CustomerIdentityTest {
                 //Optinals
                 .withLastName("LN")
                 .withGivenNames("GN")
-                .withBithDate("1990-12-11")
+                .withBirthDate("1990-12-11")
                 .withBirthCountryCode("FR")
                 .withTaxpayerCode("34000")
                 .withBirthMunicipalityCode("75018")

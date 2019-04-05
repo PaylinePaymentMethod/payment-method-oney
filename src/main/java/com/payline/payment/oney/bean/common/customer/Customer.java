@@ -106,7 +106,7 @@ public class Customer extends OneyBean {
             return this;
         }
 
-        public Customer.Builder withCustumerExternalCode(String code) {
+        public Customer.Builder withCustomerExternalCode(String code) {
             this.customerExternalCode = code;
             return this;
         }
@@ -142,17 +142,17 @@ public class Customer extends OneyBean {
             if (buyer == null) {
                 return null;
             }
-            this.customerExternalCode = buyer.getCustomerIdentifier();
-            this.languageCode = request.getLocale().getLanguage();
-            this.identity = CustomerIdentity.Builder.aCustomerIdentity()
+            this.withCustomerExternalCode(buyer.getCustomerIdentifier()) ;
+            this.withLanguageCode(request.getLocale().getLanguage()) ;
+            this.withCustomerIdentity(CustomerIdentity.Builder.aCustomerIdentity()
                     .fromPayline(buyer)
-                    .build();
-            this.contactDetails = ContactDetails.Builder.aContactDetailsBuilder()
+                    .build());
+            this.withContactDetails( ContactDetails.Builder.aContactDetailsBuilder()
                     .fromPayline(buyer)
-                    .build();
-            this.customerAddress = OneyAddress.Builder.aOneyAddressBuilder()
+                    .build());
+            this.withCustomerAddress( OneyAddress.Builder.aOneyAddressBuilder()
                     .fromPayline(buyer, Buyer.AddressType.BILLING)
-                    .build();
+                    .build());
             return this;
         }
 

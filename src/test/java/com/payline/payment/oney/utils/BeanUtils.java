@@ -29,7 +29,7 @@ public class BeanUtils {
 
         return Customer.Builder.aCustomBuilder()
                 .withLanguageCode("FR")
-                .withCustumerExternalCode("extCode")
+                .withCustomerExternalCode("extCode")
                 .withCustomerIdentity(createDefaultCustomerIdentity())
                 .withContactDetails(createDefaultContactDetails())
                 .withCustomerAddress(createDefaultCustomerAdress())

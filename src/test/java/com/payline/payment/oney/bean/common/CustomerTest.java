@@ -17,7 +17,7 @@ public class CustomerTest {
         customer = Customer.Builder.aCustomBuilder()
                 .withCustomerIdentity(createDefaultCustomerIdentity())
                 .withLanguageCode("FR")
-                .withCustumerExternalCode("code")
+                .withCustomerExternalCode("code")
                 .withTrustFlag(1)
                 .withContactDetails(createDefaultContactDetails())
                 .withCustomerAddress(createDefaultCustomerAdress())

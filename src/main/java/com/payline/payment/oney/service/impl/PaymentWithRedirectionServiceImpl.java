@@ -60,7 +60,6 @@ public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirection
                     .withPartnerTransactionId(confirmRequest != null ? confirmRequest.getPurchaseReference() : "")
                     .build();
         }
-
     }
 
     @Override

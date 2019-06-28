@@ -46,6 +46,7 @@ public class OneyErrorHandler {
             case 408:
             case 429:
             case 503:
+            case 504:
                 paylineCause = FailureCause.COMMUNICATION_ERROR;
                 break;
             case 400:

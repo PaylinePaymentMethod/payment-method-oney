@@ -5,6 +5,7 @@ import com.payline.pmapi.bean.buyer.request.BuyerDetailsRequest;
 import com.payline.pmapi.bean.capture.request.CaptureRequest;
 import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
+import com.payline.pmapi.bean.notification.request.NotificationRequest;
 import com.payline.pmapi.bean.payment.ContractConfiguration;
 import com.payline.pmapi.bean.payment.request.NotifyTransactionStatusRequest;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
@@ -111,6 +112,16 @@ public interface RequestConfigService {
      * @return the corresponding String value
      */
     String getParameterValue(BuyerDetailsRequest request, String key) throws InvalidDataException;
+
+    /**
+     * Use PARAMETERS_MAP to read a property in ContractConfiguration or in PartnerConfiguration.
+     *
+     * @param request NotificationRequest
+     * @param key     property key
+     * @return the corresponding String value
+     */
+    String getParameterValue(NotificationRequest request, String key) throws InvalidDataException;
+
 
     /**
      * @param partnerConfiguration partner Configuration map

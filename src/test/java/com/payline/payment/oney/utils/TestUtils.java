@@ -2,6 +2,7 @@ package com.payline.payment.oney.utils;
 
 import com.payline.payment.oney.utils.http.StringResponse;
 import com.payline.payment.oney.utils.properties.service.ConfigPropertiesEnum;
+import com.payline.pmapi.bean.capture.request.CaptureRequest;
 import com.payline.pmapi.bean.common.Amount;
 import com.payline.pmapi.bean.common.Buyer;
 import com.payline.pmapi.bean.common.Buyer.Address;
@@ -48,7 +49,7 @@ public class TestUtils {
     private static final Currency CURRENCY_EUR = Currency.getInstance("EUR");
     private static final Locale LOCALE_FR = Locale.FRANCE;
 
-    private static final Environment TEST_ENVIRONMENT = new Environment(NOTIFICATION_URL, SUCCESS_URL, CANCEL_URL, true);
+    public static final Environment TEST_ENVIRONMENT = new Environment(NOTIFICATION_URL, SUCCESS_URL, CANCEL_URL, true);
 
     private static final String TEST_PSP_GUID_KEY = PSP_GUID_KEY + ".be";
     private static final String TEST_CHIFFREMENT_KEY = "\"66s581CG5W+RLEqZHAGQx+vskjy660Kt8x8rhtRpXtY=\"";
@@ -106,6 +107,19 @@ public class TestUtils {
                 .withSensitivePaymentFormParameter(sensitivePaymentFormParameter)
                 .build();
 
+    }
+
+    public static CaptureRequest createDefaultCaptureRequest(){
+        return  CaptureRequest.CaptureRequestBuilder.aCaptureRequest()
+                .withTransactionId(TRANSACTION_ID)
+                .withPartnerTransactionId(EXTERNAL_REFERENCE)
+                .withAmount(TestUtils.createAmount(Currency.getInstance("EUR")))
+                .withBuyer(TestUtils.createDefaultBuyer())
+                .withContractConfiguration(TestUtils.createContractConfiguration())
+                .withEnvironment(TestUtils.TEST_ENVIRONMENT)
+                .withOrder(TestUtils.createOrder(TRANSACTION_ID))
+                .withPartnerConfiguration(TestUtils.createDefaultPartnerConfiguration())
+                .build();
     }
 
 
@@ -191,6 +205,7 @@ public class TestUtils {
                 .withRequestData(requestData)
                 .build();
         return RedirectionPaymentRequest.builder()
+                .withCaptureNow(true)
                 .withAmount(amount)
                 .withBrowser(new Browser("", LOCALE_FR))
                 .withContractConfiguration(contractConfiguration)

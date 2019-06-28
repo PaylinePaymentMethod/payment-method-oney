@@ -77,7 +77,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
                 .withNotificationUrl(environment.getNotificationURL())
                 .withSuccesUrl(environment.getRedirectionReturnURL())
                 .withPendingUrl(environment.getRedirectionReturnURL())
-                .withFailUrl(environment.getRedirectionCancelURL())
+                .withFailUrl(environment.getRedirectionReturnURL())
                 .build();
     }
 

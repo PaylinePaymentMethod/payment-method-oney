@@ -17,6 +17,11 @@ public class ConfigurationConstants {
     public static final String RELEASE_DATE = "release.date";
     public static final String RELEASE_VERSION = "release.version";
     public static final String RELEASE_PROPERTIES = "release.properties";
+
+
+    public static final String CAPTURE_NOW = "CN";
+    public static final String CAPTURE_LATER = "CL";
+    public static final String SEPARATOR = "!";
 }
 
 

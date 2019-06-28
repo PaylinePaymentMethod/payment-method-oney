@@ -25,7 +25,7 @@ public class NavigationDataTest {
     }
 
     @Test
-    public void buildNavigationData() throws Exception {
+    public void buildNavigationData() {
         navigationData = NavigationData.Builder.aNavigationDataBuilder()
                 .withFailUrl("fail/url/")
                 .withSuccesUrl("success/url/")
@@ -47,7 +47,7 @@ public class NavigationDataTest {
         Assertions.assertEquals("http://google.com/", navigationData.getNotificationUrl());
         Assertions.assertEquals("https://succesurl.com/", navigationData.getPendingUrl());
         Assertions.assertEquals("https://succesurl.com/", navigationData.getSuccessUrl());
-        Assertions.assertEquals("http://localhost/cancelurl.com/", navigationData.getFailUrl());
+        Assertions.assertEquals("https://succesurl.com/", navigationData.getFailUrl());
     }
 
     @Test

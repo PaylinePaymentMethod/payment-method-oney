@@ -1,7 +1,6 @@
 package com.payline.payment.oney.utils;
 
 import com.payline.payment.oney.bean.common.purchase.Item;
-import com.payline.payment.oney.bean.common.purchase.Purchase;
 import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.exception.InvalidFieldFormatException;
 import com.payline.pmapi.bean.configuration.PartnerConfiguration;
@@ -22,10 +21,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.payline.payment.oney.bean.common.enums.CategoryCodeHandler.findCategory;
-import static com.payline.payment.oney.utils.BeanUtils.createDelivery;
-import static com.payline.payment.oney.utils.BeanUtils.createItemList;
 import static com.payline.payment.oney.utils.OneyConstants.*;
 import static com.payline.payment.oney.utils.PluginUtils.*;
+import static com.payline.payment.oney.utils.TestUtils.createDefaultPaymentRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -457,5 +455,20 @@ public class PluginUtilsTest {
         Assertions.assertEquals("01234567890123456789", PluginUtils.truncate("01234567890123456789", 60));
         Assertions.assertEquals("", PluginUtils.truncate("", 30));
         Assertions.assertNull(PluginUtils.truncate(null, 30));
+    }
+
+    @Test
+    void createMerchantContext() {
+        String expectedMerchantContext = "CL!40800!EUR";
+        PaymentRequest request = createDefaultPaymentRequest();
+
+        //  creation test
+        String merchantContext = PluginUtils.createMerchantContext(request);
+        Assertions.assertEquals(expectedMerchantContext, merchantContext);
+
+        // recorery test
+        Assertions.assertEquals(false, PluginUtils.isCaptureNow(merchantContext));
+        Assertions.assertEquals(408.00, PluginUtils.getAmount(merchantContext));
+        Assertions.assertEquals("EUR", PluginUtils.getCurrency(merchantContext));
     }
 }

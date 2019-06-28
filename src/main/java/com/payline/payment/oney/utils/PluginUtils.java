@@ -6,8 +6,10 @@ import com.payline.payment.oney.exception.InvalidFieldFormatException;
 import com.payline.payment.oney.exception.InvalidRequestException;
 import com.payline.payment.oney.service.impl.RequestConfigServiceImpl;
 import com.payline.payment.oney.utils.properties.service.ConfigPropertiesEnum;
+import com.payline.pmapi.bean.capture.request.CaptureRequest;
 import com.payline.pmapi.bean.common.Buyer;
 import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
+import com.payline.pmapi.bean.notification.request.NotificationRequest;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
 import com.payline.pmapi.bean.payment.request.TransactionStatusRequest;
 import com.payline.pmapi.bean.refund.request.RefundRequest;
@@ -17,6 +19,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.payline.payment.oney.utils.OneyConstants.*;
+import static com.payline.payment.oney.utils.properties.constants.ConfigurationConstants.*;
 
 public class PluginUtils {
 
@@ -51,7 +54,7 @@ public class PluginUtils {
 
     /**
      * Mapping Payline Buyer.legalStatus vers Oney personType
-     *
+     * <p>
      * PAYLAPMEXT-147: personType must not be something else than 1 or 2.
      * The default value is 2.
      *
@@ -414,11 +417,68 @@ public class PluginUtils {
         return parametersMap;
     }
 
+    /**
+     * Buid a map with all needed parameters for HTTP calls
+     *
+     * @param captureRequest Payline captureRequest
+     * @return the ParametersMap
+     */
+    public static Map<String, String> getParametersMap(CaptureRequest captureRequest) throws InvalidDataException {
+
+        String authorization = RequestConfigServiceImpl.INSTANCE.getParameterValue(captureRequest, PARTNER_AUTHORIZATION_KEY);
+        String url = RequestConfigServiceImpl.INSTANCE.getParameterValue(captureRequest, PARTNER_API_URL);
+        String coutryCode = RequestConfigServiceImpl.INSTANCE.getParameterValue(captureRequest, COUNTRY_CODE_KEY);
+        return getParametersMap(authorization, url, coutryCode);
+    }
+
+
+    /**
+     * Buid a map with all needed parameters for HTTP calls
+     *
+     * @param notificationRequest Payline NotificationRequest
+     * @return the ParametersMap
+     */
+    public static Map<String, String> getParametersMap(NotificationRequest notificationRequest) throws InvalidDataException {
+
+        String authorization = RequestConfigServiceImpl.INSTANCE.getParameterValue(notificationRequest, PARTNER_AUTHORIZATION_KEY);
+        String url = RequestConfigServiceImpl.INSTANCE.getParameterValue(notificationRequest, PARTNER_API_URL);
+        String coutryCode = RequestConfigServiceImpl.INSTANCE.getParameterValue(notificationRequest, COUNTRY_CODE_KEY);
+        return getParametersMap(authorization, url, coutryCode);
+    }
+
 
     public static String truncate(String value, int length) {
         if (value != null && value.length() > length) {
             value = value.substring(0, length);
         }
         return value;
+    }
+
+    public static String createMerchantContext(PaymentRequest paymentRequest) {
+        return (paymentRequest.isCaptureNow() ? CAPTURE_NOW : CAPTURE_LATER)
+                + SEPARATOR
+                + paymentRequest.getAmount().getAmountInSmallestUnit() // adding amount in merchant_context
+                + SEPARATOR
+                + paymentRequest.getAmount().getCurrency().getCurrencyCode(); // addingCurrency in merchant_context
+    }
+
+    public static boolean isCaptureNow(String s) {
+        return (CAPTURE_NOW.equals(s.split(SEPARATOR)[0]));
+    }
+
+    public static float getAmount(String s) {
+        String a = s.split(SEPARATOR)[1];
+        String c = s.split(SEPARATOR)[2];
+
+        int cl = Currency.getInstance(c).getDefaultFractionDigits();
+
+        String finalAmount = a.substring(0, a.length() - cl)
+                + "."
+                + a.substring(a.length() - cl);
+        return Float.valueOf(finalAmount);
+    }
+
+    public static String getCurrency(String s) {
+        return s.split(SEPARATOR)[2];
     }
 }

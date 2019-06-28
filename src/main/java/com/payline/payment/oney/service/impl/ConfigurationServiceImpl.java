@@ -231,11 +231,12 @@ public class ConfigurationServiceImpl implements ConfigurationService {
                         err = OneyError40x.parseJson(stringResponse.getContent());
                         String errMsg = err.getPrintableMessage();
                         LOGGER.error(errMsg);
+                        // it could be the authorisation key
                         if (errMsg.contains("invalid subscription key")) {
                             errors.put(PARTNER_AUTHORIZATION_KEY, err.getMessage());
                         } else {
-                            LOGGER.error("Les paramètres {} et {} ne correspondent pas", PARTNER_AUTHORIZATION_KEY, COUNTRY_CODE_KEY);
-                            errors.put(COUNTRY_CODE_KEY, err.getMessage());
+                            // if not,  it's psp_guid or merchant_guid. we assume psp_guid is correct
+                            errors.put(MERCHANT_GUID_KEY, err.getMessage());
 
                         }
                         break;

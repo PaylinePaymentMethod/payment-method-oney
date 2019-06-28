@@ -59,6 +59,7 @@ public class PaymentServiceImpl implements PaymentService {
             final NavigationData navigationData = beanAssembleService.assembleNavigationData(paymentRequest);
             final Customer customer = beanAssembleService.assembleCustomer(paymentRequest);
             final Purchase purchase = beanAssembleService.assemblePurchase(paymentRequest);
+            String merchantContext = PluginUtils.createMerchantContext(paymentRequest);
 
             final OneyPaymentRequest oneyRequest = OneyPaymentRequest.Builder.aOneyPaymentRequest()
                     .withLanguageCode(language)
@@ -74,6 +75,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .withMerchantContext(paymentRequest.getSoftDescriptor())
                     .withPspContext(paymentRequest.getTransactionId())
                     .withCallParameters(PluginUtils.getParametersMap(paymentRequest))
+                    .withMerchantContext(merchantContext)// adding data to merchantContext field to get it later on the notification
                     .build();
 
             final StringResponse oneyResponse = httpClient.initiatePayment(oneyRequest, paymentRequest.getEnvironment().isSandbox());

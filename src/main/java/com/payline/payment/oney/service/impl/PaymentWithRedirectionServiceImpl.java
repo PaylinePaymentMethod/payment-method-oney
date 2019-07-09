@@ -59,24 +59,15 @@ public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirection
                 TransactionStatusResponse response = TransactionStatusResponse.createTransactionStatusResponseFromJson(status.getContent(), oneyTransactionStatusRequest.getEncryptKey());
                 if (response.getStatusPurchase() != null) {
 
-                    // check if it has to confirm immediately
-                    if (redirectionPaymentRequest.isCaptureNow()) {
-                        // Special case in which we need to send a confirmation request
-                        if ("FAVORABLE".equals(response.getStatusPurchase().getStatusCode())) {
-                            OneyConfirmRequest confirmRequest = new OneyConfirmRequest.Builder(redirectionPaymentRequest)
-                                    .build();
-                            return this.validatePayment(confirmRequest, isSandbox);
-                        } else {
-                            return this.handleTransactionStatusResponse(response,
-                                    oneyTransactionStatusRequest.getPurchaseReference());
-                        }
+                    // Special case in which we need to send a confirmation request
+                    if (redirectionPaymentRequest.isCaptureNow() && "FAVORABLE".equals(response.getStatusPurchase().getStatusCode())) {
+                        OneyConfirmRequest confirmRequest = new OneyConfirmRequest.Builder(redirectionPaymentRequest)
+                                .build();
+                        return this.validatePayment(confirmRequest, isSandbox);
                     } else {
-                        TransactionStatusResponse transactionStatusResponse = TransactionStatusResponse.createTransactionStatusResponseFromJson(status.getContent(), oneyTransactionStatusRequest.getEncryptKey());
-                        return handleTransactionStatusResponse(transactionStatusResponse, partnerTransactionId);
-
+                        return handleTransactionStatusResponse(response, partnerTransactionId);
 
                     }
-
 
                 } else {
                     //Pas de statut pour cette demande
@@ -138,7 +129,7 @@ public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirection
      * @return PaymentResponse
      */
     public PaymentResponse validatePayment(OneyConfirmRequest confirmRequest, boolean isSandbox) throws PluginTechnicalException {
-
+        LOGGER.info("payment confirmation request nedeed");
         StringResponse oneyResponse = httpClient.initiateConfirmationPayment(confirmRequest, isSandbox);
 
         // si erreur lors de l'envoi de la requete http

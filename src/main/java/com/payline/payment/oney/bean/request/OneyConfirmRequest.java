@@ -8,6 +8,7 @@ import com.payline.payment.oney.bean.common.payment.PaymentData;
 import com.payline.payment.oney.bean.response.OneyNotificationResponse;
 import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.service.impl.RequestConfigServiceImpl;
+import com.payline.payment.oney.utils.OneyConstants;
 import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.capture.request.CaptureRequest;
@@ -128,7 +129,7 @@ public class OneyConfirmRequest extends ParameterizedUrlOneyRequest {
             this.encryptKey = RequestConfigServiceImpl.INSTANCE.getParameterValue(notificationRequest, PARTNER_CHIFFREMENT_KEY);
 
 
-            this.purchaseReference = oneyResponse.getPurchase().getExternalReference();
+            this.purchaseReference = OneyConstants.EXTERNAL_REFERENCE_TYPE + OneyConstants.PIPE + oneyResponse.getPurchase().getExternalReference();
             this.pspGuid = RequestConfigServiceImpl.INSTANCE.getParameterValue(notificationRequest, PSP_GUID_KEY);
             this.callParameters = PluginUtils.getParametersMap(notificationRequest);
         }

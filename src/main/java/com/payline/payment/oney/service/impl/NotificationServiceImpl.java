@@ -5,18 +5,23 @@ import com.payline.payment.oney.bean.response.OneyNotificationResponse;
 import com.payline.payment.oney.bean.response.TransactionStatusResponse;
 import com.payline.payment.oney.exception.PluginTechnicalException;
 import com.payline.payment.oney.utils.OneyConstants;
+import com.payline.payment.oney.utils.OneyErrorHandler;
 import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.http.OneyHttpClient;
 import com.payline.payment.oney.utils.http.StringResponse;
 import com.payline.pmapi.bean.common.FailureCause;
-import com.payline.pmapi.bean.common.FailureTransactionStatus;
-import com.payline.pmapi.bean.common.SuccessTransactionStatus;
-import com.payline.pmapi.bean.common.TransactionStatus;
+import com.payline.pmapi.bean.common.Message;
+import com.payline.pmapi.bean.common.OnHoldCause;
+import com.payline.pmapi.bean.common.TransactionCorrelationId;
 import com.payline.pmapi.bean.notification.request.NotificationRequest;
 import com.payline.pmapi.bean.notification.response.NotificationResponse;
 import com.payline.pmapi.bean.notification.response.impl.IgnoreNotificationResponse;
-import com.payline.pmapi.bean.notification.response.impl.TransactionStateChangedResponse;
+import com.payline.pmapi.bean.notification.response.impl.PaymentResponseByNotificationResponse;
 import com.payline.pmapi.bean.payment.request.NotifyTransactionStatusRequest;
+import com.payline.pmapi.bean.payment.response.PaymentResponse;
+import com.payline.pmapi.bean.payment.response.buyerpaymentidentifier.impl.EmptyTransactionDetails;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseOnHold;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
 import com.payline.pmapi.service.NotificationService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Date;
 import java.util.stream.Collectors;
 
 import static com.payline.payment.oney.bean.response.TransactionStatusResponse.createTransactionStatusResponseFromJson;
@@ -41,10 +45,10 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public NotificationResponse parse(NotificationRequest notificationRequest) {
         // init data
-        String transactionId = "UNKNOWN";
         String partnerTransactionId = "UNKNOWN";
-        TransactionStateChangedResponse.Action action = TransactionStateChangedResponse.Action.AUTHOR_AND_CAPTURE;
-        TransactionStatus status;
+        String paymentStatus = "UNKNOWN";
+        PaymentResponse paymentResponse;
+
 
         // get the body of the request
         try (BufferedReader br = new BufferedReader(new InputStreamReader(notificationRequest.getContent(), "UTF-8"))) {
@@ -53,15 +57,24 @@ public class NotificationServiceImpl implements NotificationService {
 
             // extract all needed data
             OneyNotificationResponse oneyResponse = OneyNotificationResponse.createTransactionStatusResponseFromJson(bodyResponse, key);
-            transactionId = oneyResponse.getPspContext();
             partnerTransactionId = oneyResponse.getPurchase().getExternalReference();
+            paymentStatus = oneyResponse.getPurchase().getStatusCode();
+
+            // create a template success response
+            PaymentResponse successPaymentResponse = PaymentResponseSuccess.PaymentResponseSuccessBuilder.aPaymentResponseSuccess()
+                    .withStatusCode(Integer.toString(HTTP_OK))
+                    .withTransactionDetails(new EmptyTransactionDetails())
+                    .withPartnerTransactionId(partnerTransactionId)
+                    .withMessage(new Message(Message.MessageType.SUCCESS, oneyResponse.getPurchase().getStatusLabel()))
+                    .build();
 
 
             // check the payment status
-            String paymentStatus = oneyResponse.getPurchase().getStatusCode();
             switch (paymentStatus) {
                 case "FUNDED":
-                    status = new SuccessTransactionStatus();
+                case "TO_BE_FUNDED":
+                case "CANCELLED":
+                    paymentResponse = successPaymentResponse;
                     break;
                 case "FAVORABLE":
                     // if captureNow => does to comfirm call
@@ -71,20 +84,21 @@ public class NotificationServiceImpl implements NotificationService {
                                 .build();
                         StringResponse confirmResponse = httpClient.initiateConfirmationPayment(confirmRequest, notificationRequest.getEnvironment().isSandbox());
 
-
                         // check the confirmation response
-                        if (confirmResponse == null || confirmResponse.getContent() == null || confirmResponse.getCode() != HTTP_OK) {
+                        if (confirmResponse.getContent() == null || confirmResponse.getCode() != HTTP_OK) {
                             // unable to read the response
-                            LOGGER.error("Unable to read the confirmation response");
-                            status = new FailureTransactionStatus(FailureCause.COMMUNICATION_ERROR);
+                            String errorMessage ="Unable to read the confirmation response";
+                            LOGGER.error(errorMessage);
+                            paymentResponse = OneyErrorHandler.getPaymentResponseFailure(FailureCause.COMMUNICATION_ERROR, partnerTransactionId, PluginUtils.truncate(errorMessage, 50));
                             break;
                         }
 
                         TransactionStatusResponse confirmTransactionResponse = createTransactionStatusResponseFromJson(confirmResponse.getContent(), key);
                         if (confirmTransactionResponse == null || confirmTransactionResponse.getStatusPurchase() == null) {
                             // unable to read the payment status
-                            LOGGER.error("Unable to read the comfiration response transaction status");
-                            status = new FailureTransactionStatus(FailureCause.COMMUNICATION_ERROR);
+                            String errorMessage = "Unable to read the confirmation response transaction status";
+                            LOGGER.error(errorMessage);
+                            paymentResponse = OneyErrorHandler.getPaymentResponseFailure(FailureCause.COMMUNICATION_ERROR, partnerTransactionId, PluginUtils.truncate(errorMessage, 50));
                             break;
                         }
 
@@ -92,48 +106,62 @@ public class NotificationServiceImpl implements NotificationService {
                         String confirmStatus = confirmTransactionResponse.getStatusPurchase().getStatusCode();
                         if ("FUNDED".equals(confirmStatus)) {
                             // success
-                            status = new SuccessTransactionStatus();
+                            paymentResponse = successPaymentResponse;
                         } else {
-                            status = new FailureTransactionStatus(FailureCause.REFUSED);
+                            paymentResponse = OneyErrorHandler.getPaymentResponseFailure(FailureCause.REFUSED, partnerTransactionId, "payment not funded");
                         }
+                    } else {
+                        // is NOT to capture now
+                        paymentResponse = successPaymentResponse;
                     }
-                    status = new SuccessTransactionStatus();
 
                     break;
                 case "REFUSED":
-                    status = new FailureTransactionStatus(FailureCause.REFUSED);
+                    paymentResponse = OneyErrorHandler.getPaymentResponseFailure(FailureCause.REFUSED,
+                            partnerTransactionId, PluginUtils.truncate(oneyResponse.getPurchase().getStatusLabel(), 50));
                     break;
                 case "ABORTED":
-                    status = new FailureTransactionStatus(FailureCause.CANCEL);
+                    paymentResponse = OneyErrorHandler.getPaymentResponseFailure(FailureCause.CANCEL,
+                            partnerTransactionId, PluginUtils.truncate(oneyResponse.getPurchase().getStatusLabel(), 50));
+                    break;
+                case "PENDING":
+                    paymentResponse = PaymentResponseOnHold.PaymentResponseOnHoldBuilder.aPaymentResponseOnHold()
+                            .withPartnerTransactionId(partnerTransactionId)
+                            .withOnHoldCause(OnHoldCause.SCORING_ASYNC)
+                            .build();
                     break;
                 default:
                     // Ignore the notification, with a 204 HTTP status code
+                    LOGGER.info("Unknown payment status: " + paymentStatus);
                     return IgnoreNotificationResponse.IgnoreNotificationResponseBuilder.aIgnoreNotificationResponseBuilder()
                             .withHttpStatus(204)
                             .build();
             }
 
-
         } catch (IOException e) {
-            LOGGER.error("Unable to read the notification request's body");
-            status = new FailureTransactionStatus(FailureCause.COMMUNICATION_ERROR);
+            String errorMessage = "Unable to read the notification request's body";
+            LOGGER.error(errorMessage);
+            paymentResponse = OneyErrorHandler.getPaymentResponseFailure(FailureCause.COMMUNICATION_ERROR, partnerTransactionId, PluginUtils.truncate(errorMessage, 50));
         } catch (PluginTechnicalException e) {
-            LOGGER.error("Unable to get infomation needed to know the transaction status");
-            status = new FailureTransactionStatus(e.getFailureCause());
+            LOGGER.error("Unable to get information needed to know the transaction status");
+            paymentResponse = OneyErrorHandler.getPaymentResponseFailure(e.getFailureCause(), partnerTransactionId, e.getTruncatedErrorCodeOrLabel());
         }
 
-        return TransactionStateChangedResponse.TransactionStateChangedResponseBuilder.aTransactionStateChangedResponse()
-                .withTransactionId(transactionId)
-                .withPartnerTransactionId(partnerTransactionId)
-                .withStatusDate(new Date())
-                .withAction(action)
-                .withTransactionStatus(status)
+        // create response
+        TransactionCorrelationId transactionCorrelationId = TransactionCorrelationId.TransactionCorrelationIdBuilder.aCorrelationIdBuilder()
+                .withType(TransactionCorrelationId.CorrelationIdType.PARTNER_TRANSACTION_ID)
+                .withValue(partnerTransactionId)
+                .build();
+
+        return PaymentResponseByNotificationResponse.PaymentResponseByNotificationResponseBuilder.aPaymentResponseByNotificationResponseBuilder()
+                .withPaymentResponse(paymentResponse)
+                .withTransactionCorrelationId(transactionCorrelationId)
+                .withHttpStatus(204)
                 .build();
     }
 
     @Override
     public void notifyTransactionStatus(NotifyTransactionStatusRequest notifyTransactionStatusRequest) {
         //ras.
-
     }
 }

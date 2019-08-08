@@ -3,14 +3,11 @@ package com.payline.payment.oney.bean.common.purchase;
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyAddress;
 import com.payline.payment.oney.bean.common.OneyBean;
-import com.payline.payment.oney.bean.common.enums.AddressType;
 import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.common.Buyer;
 import com.payline.pmapi.bean.payment.Order;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
-
-import java.text.SimpleDateFormat;
 
 public class Delivery extends OneyBean {
 
@@ -134,16 +131,33 @@ public class Delivery extends OneyBean {
 
             Order order = request.getOrder();
             if (order != null) {
-                this.withDeliveryDate((new SimpleDateFormat("yyyy-MM-dd")).format(order.getExpectedDeliveryDate()));
+                this.withDeliveryDate(PluginUtils.dateToString(order.getExpectedDeliveryDate()));
                 if (request.getOrder() != null) {
                     this.withDeliveryModeCode(PluginUtils.getOneyDeliveryModeCode(order.getDeliveryMode()));
                     this.withDeliveryOption(PluginUtils.getOneyDeliveryOption(order.getDeliveryTime()));
                 }
             }
 
-            AddressType addressTyp = AddressType.fromPaylineAddressType(Buyer.AddressType.DELIVERY);
-            if (addressTyp != null) {
-                this.withAddressType(addressTyp.getValue()) ;
+
+            // set the address_type from the delivery mode code (see JIRA 175)
+            switch (this.deliveryModeCode) {
+                case 1:
+                case 2:
+                case 3:
+                    this.withAddressType(this.deliveryModeCode);
+                    break;
+                case 4:
+                    this.withAddressType(5);
+                    break;
+                case 5:
+                    this.withAddressType(6);
+                    break;
+                case 6:
+                    this.withAddressType(4);
+                    break;
+                default:
+                    this.withAddressType(1);
+                    break;
             }
 
             Buyer buyer = request.getBuyer();

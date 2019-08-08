@@ -2,6 +2,7 @@ package com.payline.payment.oney.bean.common.purchase;
 
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyBean;
+import com.payline.payment.oney.bean.common.enums.CategoryCodeHandler;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.common.Amount;
 import com.payline.pmapi.bean.payment.Order;
@@ -141,7 +142,7 @@ public class Purchase extends OneyBean {
 
 
         public Purchase.Builder fromPayline(PaymentRequest request) {
-            this.withExternalReferenceType( EXTERNAL_REFERENCE_TYPE);
+            this.withExternalReferenceType(EXTERNAL_REFERENCE_TYPE);
             if (request != null) {
                 Order order = request.getOrder();
                 if (order != null) {
@@ -154,22 +155,33 @@ public class Purchase extends OneyBean {
 
                 }
 
-                this.withDelivery( Delivery.Builder.aDeliveryBuilder()
+                this.withDelivery(Delivery.Builder.aDeliveryBuilder()
                         .fromPayline(request)
                         .build());
                 List<Order.OrderItem> orderItems = request.getOrder().getItems();
-                this.withNumberOfItems( orderItems.size());
+                this.withNumberOfItems(orderItems.size());
                 List<Item> listItems = new ArrayList<>();
 
                 for (Order.OrderItem item : orderItems) {
                     listItems.add(Item.Builder.aItemBuilder()
-                            .fromPayline(item)
-                            .build());
+                            .withMainItem(0)
+                            .withCategoryCode(CategoryCodeHandler.findCategory(item.getCategory()))
+                            .withLabel(item.getComment()) //or get Brand +" "+ get comment ?
+                            .withItemExternalCode(item.getReference())
+                            .withQuantity(item.getQuantity().intValue())
+                            .withPrice(createFloatAmount(item.getAmount().getAmountInSmallestUnit(), item.getAmount().getCurrency()))
+                            .withTravel(null)
+                            .withMarketplaceFlag((request.getSubMerchant() == null ? 1 : 0))
+                            .withMarketplaceName(request.getMerchantName())
+                            .build()
+                    );
+
+
                 }
 
                 //Define the main item
                 Item.defineMainItem(listItems);
-                this.withListItem( listItems);
+                this.withListItem(listItems);
             }
             return this;
         }

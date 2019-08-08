@@ -14,10 +14,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.powermock.reflect.Whitebox;
 
 import java.math.BigInteger;
-import java.util.Currency;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.payline.payment.oney.bean.common.enums.CategoryCodeHandler.findCategory;
@@ -468,7 +465,29 @@ public class PluginUtilsTest {
 
         // recorery test
         Assertions.assertEquals(false, PluginUtils.isCaptureNow(merchantContext));
-        Assertions.assertEquals(408.00, PluginUtils.getAmount(merchantContext));
+        Assertions.assertEquals(408.00f, PluginUtils.getAmount(merchantContext));
         Assertions.assertEquals("EUR", PluginUtils.getCurrency(merchantContext));
     }
+
+
+    @Test
+    void readMerchantContextCN() {
+        String merchantContext = "CN!17204!EUR";
+
+        // recorery test
+        Assertions.assertEquals(true, PluginUtils.isCaptureNow(merchantContext));
+        float toto =  PluginUtils.getAmount(merchantContext);
+        Assertions.assertEquals(172.04f,toto);
+        Assertions.assertEquals("EUR", PluginUtils.getCurrency(merchantContext));
+    }
+
+    @Test
+    void dateToString(){
+        Date date = new Date();
+        String sDate = PluginUtils.dateToString(date);
+
+        Assertions.assertNotNull(sDate);
+        Assertions.assertTrue(sDate.matches("[0-9]{4}-[0-1][0-9]-[0-3][0-9]"));
+    }
+
 }

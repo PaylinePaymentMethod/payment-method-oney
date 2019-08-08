@@ -2,6 +2,7 @@ package com.payline.payment.oney.service;
 
 import com.payline.payment.oney.bean.common.NavigationData;
 import com.payline.payment.oney.bean.common.customer.Customer;
+import com.payline.payment.oney.bean.common.customer.PurchaseHistory;
 import com.payline.payment.oney.bean.common.payment.BusinessTransactionData;
 import com.payline.payment.oney.bean.common.payment.PaymentData;
 import com.payline.payment.oney.bean.common.purchase.Purchase;
@@ -19,4 +20,6 @@ public interface BeanAssembleService {
     NavigationData assembleNavigationData(PaymentRequest paymentRequest) throws PluginTechnicalException;
 
     Purchase assemblePurchase(PaymentRequest paymentRequest) throws PluginTechnicalException;
+
+    PurchaseHistory assemblePurchaseHistory(PaymentRequest paymentRequest);
 }

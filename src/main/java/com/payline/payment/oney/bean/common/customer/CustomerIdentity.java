@@ -6,8 +6,6 @@ import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.common.Buyer;
 
-import java.text.SimpleDateFormat;
-
 public class CustomerIdentity extends OneyBean {
 
     @SerializedName("individual_taxpayer_code")
@@ -226,7 +224,7 @@ public class CustomerIdentity extends OneyBean {
             }
 
             if (buyer.getBirthday() != null) {
-                this.withBirthDate( new SimpleDateFormat("yyyy-MM-dd").format(buyer.getBirthday()));
+                this.withBirthDate(PluginUtils.dateToString(buyer.getBirthday()));
             }
             //Champs a mapper dans les prochains lots
             this.withGivenNames(null);

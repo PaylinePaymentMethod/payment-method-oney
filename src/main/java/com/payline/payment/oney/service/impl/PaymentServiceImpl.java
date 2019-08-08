@@ -2,6 +2,7 @@ package com.payline.payment.oney.service.impl;
 
 import com.payline.payment.oney.bean.common.NavigationData;
 import com.payline.payment.oney.bean.common.customer.Customer;
+import com.payline.payment.oney.bean.common.customer.PurchaseHistory;
 import com.payline.payment.oney.bean.common.payment.BusinessTransactionData;
 import com.payline.payment.oney.bean.common.payment.PaymentData;
 import com.payline.payment.oney.bean.common.purchase.Purchase;
@@ -59,7 +60,8 @@ public class PaymentServiceImpl implements PaymentService {
             final NavigationData navigationData = beanAssembleService.assembleNavigationData(paymentRequest);
             final Customer customer = beanAssembleService.assembleCustomer(paymentRequest);
             final Purchase purchase = beanAssembleService.assemblePurchase(paymentRequest);
-            String merchantContext = PluginUtils.createMerchantContext(paymentRequest);
+            final String merchantContext = PluginUtils.createMerchantContext(paymentRequest);
+            final PurchaseHistory purchaseHistory = beanAssembleService.assemblePurchaseHistory(paymentRequest);
 
             final OneyPaymentRequest oneyRequest = OneyPaymentRequest.Builder.aOneyPaymentRequest()
                     .withLanguageCode(language)
@@ -70,6 +72,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .withPaymentdata(paymentData)
                     .withCustomer(customer)
                     .withPurchase(purchase)
+                    .withPurchaseHistory(purchaseHistory)
                     .withMerchantLanguageCode(merchLanguage)
                     .withEncryptKey(chiffrementKey)
                     .withMerchantContext(paymentRequest.getSoftDescriptor())

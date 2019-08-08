@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.LoyaltyInformation;
 import com.payline.payment.oney.bean.common.NavigationData;
 import com.payline.payment.oney.bean.common.customer.Customer;
+import com.payline.payment.oney.bean.common.customer.PurchaseHistory;
 import com.payline.payment.oney.bean.common.payment.PaymentData;
 import com.payline.payment.oney.bean.common.purchase.Purchase;
 import com.payline.payment.oney.utils.Required;
@@ -33,6 +34,9 @@ public class OneyPaymentRequest extends OneyRequest {
 
     @Required
     private Customer customer;
+
+    @SerializedName("purchase_history")
+    private PurchaseHistory purchaseHistory;
 
     @Required
     @SerializedName("payment")
@@ -80,6 +84,10 @@ public class OneyPaymentRequest extends OneyRequest {
         return customer;
     }
 
+    public PurchaseHistory getPurchaseHistory() {
+        return purchaseHistory;
+    }
+
     public PaymentData getPaymentData() {
         return paymentData;
     }
@@ -111,6 +119,7 @@ public class OneyPaymentRequest extends OneyRequest {
         this.merchantRequestId = builder.merchantRequestId;
         this.purchase = builder.purchase;
         this.customer = builder.customer;
+        this.purchaseHistory = builder.purchaseHistory;
         this.paymentData = builder.paymentData;
         this.loyaltyInformation = builder.loyaltyInformation;
         this.navigationData = builder.navigationData;
@@ -133,6 +142,7 @@ public class OneyPaymentRequest extends OneyRequest {
         private String merchantRequestId;
         private Purchase purchase;
         private Customer customer;
+        private PurchaseHistory purchaseHistory;
         private PaymentData paymentData;
         private LoyaltyInformation loyaltyInformation;
         private NavigationData navigationData;
@@ -192,6 +202,11 @@ public class OneyPaymentRequest extends OneyRequest {
 
         public Builder withCustomer(Customer customer) {
             this.customer = customer;
+            return this;
+        }
+
+        public Builder withPurchaseHistory(PurchaseHistory purchaseHistory){
+            this.purchaseHistory = purchaseHistory;
             return this;
         }
 

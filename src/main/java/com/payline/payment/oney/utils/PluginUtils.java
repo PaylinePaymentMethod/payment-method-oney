@@ -15,6 +15,8 @@ import com.payline.pmapi.bean.payment.request.TransactionStatusRequest;
 import com.payline.pmapi.bean.refund.request.RefundRequest;
 
 import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -480,5 +482,10 @@ public class PluginUtils {
 
     public static String getCurrency(String s) {
         return s.split(SEPARATOR)[2];
+    }
+
+    public static String dateToString(Date date){
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        return  df.format(date);
     }
 }

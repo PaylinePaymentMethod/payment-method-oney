@@ -5,6 +5,10 @@ import com.payline.pmapi.bean.common.FailureCause;
 public class InvalidDataException extends PluginTechnicalException {
 
 
+    public InvalidDataException( String message ){
+        super( message, message );
+    }
+
     /**
      * @param message the complete error message (as print in log files)
      * @param field   the required filed : 'Object.Field'

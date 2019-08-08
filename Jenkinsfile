@@ -53,12 +53,12 @@ pipeline {
                 }
             }
         }
-        stage("Dependency Check") {
-            steps {
-                sh './gradlew dependencyCheckAnalyze --info'
-                dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '**/build/reports/dependency-check-report.xml', unHealthy: ''
-            }
-         }
+//        stage("Dependency Check") {
+//            steps {
+//                sh './gradlew dependencyCheckAnalyze --info'
+//                dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '**/build/reports/dependency-check-report.xml', unHealthy: ''
+//            }
+//         }
         stage ('Publication & Sonar') {
             parallel {
                 stage('Publication sur Nexus') {

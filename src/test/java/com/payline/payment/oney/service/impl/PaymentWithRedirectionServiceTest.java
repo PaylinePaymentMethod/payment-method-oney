@@ -11,6 +11,7 @@ import com.payline.pmapi.bean.common.FailureCause;
 import com.payline.pmapi.bean.payment.request.RedirectionPaymentRequest;
 import com.payline.pmapi.bean.payment.request.TransactionStatusRequest;
 import com.payline.pmapi.bean.payment.response.PaymentResponse;
+import com.payline.pmapi.bean.payment.response.impl.PaymentResponseActiveWaiting;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseFailure;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseOnHold;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
@@ -128,65 +129,11 @@ public class PaymentWithRedirectionServiceTest extends OneyConfigBean {
     }
 
     @Test
-    public void finalizeRedirectionPaymentEncryptedOK() throws Exception {
-        StringResponse responseMocked = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ul/bQBJ3C1/cyjmvmAAmMq9gLttO54jS+b/UB/MPwY6YeiFWc7TtYNuIHJF3Grkl2/O4B6r4zkTpus9DrEZIou4aE8tfX+G43n2zFDAoYG3u3\"}");
-        StringResponse responseMockedConfirmation = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ulzsMg0QfZ1N009CwI1PLZzBnbfv6/Enufe5TriN1gKQkEmbMYU0PMtHdk+eF7boW/lsIc5PmjpFX1E/4MUJGkzI=\"}");
-
-        Mockito.doReturn(responseMocked).when(httpClient).initiateGetTransactionStatus( Mockito.any(), anyBoolean() );
-        Mockito.doReturn(responseMockedConfirmation).when(httpClient).initiateConfirmationPayment( Mockito.any(), anyBoolean() );
-
-        RedirectionPaymentRequest redirectionPaymentRequest = createCompleteRedirectionPaymentBuilder();
-        mockCorrectlyConfigPropertiesEnum(true);
-        PaymentResponse response = service.finalizeRedirectionPayment(redirectionPaymentRequest);
-
-        Assertions.assertEquals(PaymentResponseSuccess.class, response.getClass());
-        PaymentResponseSuccess success = (PaymentResponseSuccess) response;
-        Assertions.assertNotNull(success.getPartnerTransactionId());
-        Assertions.assertNotNull(success.getMessage());
-        Assertions.assertNotNull(success.getStatusCode());
-        Assertions.assertNotNull(success.getTransactionDetails());
-
-
-    }
-
-    @Test
-    public void finalizeRedirectionPaymentNotEncryptedOK() throws Exception {
-        StringResponse responseMocked = createStringResponse(200, "OK", "{\"purchase\":{\"status_code\":\"FAVORABLE\",\"status_label\":\"Transaction is completed\"}}");
-        StringResponse responseMockedConfirmation = createStringResponse(200, "OK", "{\"purchase\":{\"status_code\":\"FUNDED\",\"status_label\":\"Transaction is completed\"}}");
-
-        Mockito.doReturn(responseMocked).when(httpClient).initiateGetTransactionStatus( Mockito.any(), anyBoolean() );
-        Mockito.doReturn(responseMockedConfirmation).when(httpClient).initiateConfirmationPayment( Mockito.any(), anyBoolean() );
-
-
-        RedirectionPaymentRequest redirectionPaymentRequest = createCompleteRedirectionPaymentBuilder();
-        mockCorrectlyConfigPropertiesEnum(false);
-        mockCorrectlyConfigPropertiesEnum(false);
-        PaymentResponse response = service.finalizeRedirectionPayment(redirectionPaymentRequest);
-
-        Assertions.assertEquals(PaymentResponseSuccess.class, response.getClass());
-        PaymentResponseSuccess success = (PaymentResponseSuccess) response;
-        Assertions.assertNotNull(success.getPartnerTransactionId());
-        Assertions.assertNotNull(success.getMessage());
-        Assertions.assertNotNull(success.getStatusCode());
-        Assertions.assertNotNull(success.getTransactionDetails());
-
-
-    }
-
-    @Test
-    public void finalizeRedirectionPaymentTestKO() throws PluginTechnicalException {
-        StringResponse responseMocked = createStringResponse(200, "OK", "{\"encrypted_message\":\"ymDHJ7HBRe49whKjH1HDtA==\"}");
-        Mockito.doReturn(responseMocked).when(httpClient).initiateGetTransactionStatus( Mockito.any(), anyBoolean() );
-
+    public void finalizeRedirectionPaymentTest() {
         RedirectionPaymentRequest redirectionPaymentRequest = createCompleteRedirectionPaymentBuilder();
         PaymentResponse response = service.finalizeRedirectionPayment(redirectionPaymentRequest);
 
-        Assertions.assertEquals(PaymentResponseFailure.class, response.getClass());
-        PaymentResponseFailure failure = (PaymentResponseFailure) response;
-        Assertions.assertNotNull(failure.getPartnerTransactionId());
-        Assertions.assertNotNull(failure.getFailureCause());
-        Assertions.assertEquals(FailureCause.REFUSED, failure.getFailureCause());
-
+        Assertions.assertEquals(PaymentResponseActiveWaiting.class, response.getClass());
     }
 
     @Test

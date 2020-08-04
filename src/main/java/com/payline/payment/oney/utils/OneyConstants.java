@@ -1,5 +1,7 @@
 package com.payline.payment.oney.utils;
 
+import java.util.LinkedHashMap;
+
 public class OneyConstants {
 
     private OneyConstants() {
@@ -104,8 +106,23 @@ public class OneyConstants {
     public static final String COUNTRY_NOT_ISO = "contract.errors.countryNotISO";
     public static final String LANGUAGE_NOT_ISO = "contract.errors.languageNotISO";
 
+    public static final String COUNTRY_NOT_IN_LIST = "contract.errors.countryNotInList";
+
     public static final String UNEXPECTED_ERR = "error.unexpected";
 
 
     public static final String DATE_FORMAT = "\\d{4}-\\d{2}-\\d{2}";
+
+
+    // The list of pays accepted bay the API
+    public static LinkedHashMap<String, String> listCountry() {
+        final LinkedHashMap<String, String> codes = new LinkedHashMap<>();
+        codes.put("FR", "FR");
+        codes.put("BE", "BE");
+        codes.put("IT", "IT");
+        codes.put("ES", "ES");
+        codes.put("SP", "SP");
+        codes.put("PT", "PT");
+        return codes;
+    }
 }

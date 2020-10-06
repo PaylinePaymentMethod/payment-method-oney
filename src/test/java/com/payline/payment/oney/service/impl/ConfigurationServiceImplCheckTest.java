@@ -81,7 +81,20 @@ public class ConfigurationServiceImplCheckTest {
     }
 
     @Test
-    public void check_ok(){
+    public void check_okISOCountry(){
+        // when: calling check method
+        Map<String, String> errors = service.check( this.createContractParametersCheckRequest() );
+
+        // then: no error
+        Assertions.assertEquals(0, errors.size());
+    }
+
+    @Test
+    public void check_okNonISOCountryCodeInList(){
+        // put a non ISO country Code, accepted in the list of countries
+        contractProperties.put(COUNTRY_CODE_KEY, new ContractProperty("SP"));
+        partnerConfiguration.put(PSP_GUID_KEY + ".sp", "psp_id_test");
+        partnerConfiguration.put(PARTNER_AUTHORIZATION_KEY + ".sp", "mykey");
         // when: calling check method
         Map<String, String> errors = service.check( this.createContractParametersCheckRequest() );
 

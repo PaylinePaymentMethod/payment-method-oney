@@ -1,6 +1,7 @@
 package com.payline.payment.oney.bean.common;
 
 import com.payline.payment.oney.bean.common.customer.CustomerIdentity;
+import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.utils.TestUtils;
 import com.payline.pmapi.bean.common.Buyer;
 import org.junit.jupiter.api.Assertions;
@@ -11,7 +12,7 @@ import static com.payline.payment.oney.utils.TestUtils.createDefaultBuyer;
 public class CustomerIdentityTest {
 
     @Test
-    void customerFromPaylineTest() {
+    void customerFromPaylineTest() throws InvalidDataException {
         Buyer buyer = TestUtils.createDefaultBuyer();
         CustomerIdentity customerIdentity = CustomerIdentity.Builder.aCustomerIdentity().fromPayline(buyer).build();
         Assertions.assertNull(customerIdentity.getLastName());
@@ -33,7 +34,7 @@ public class CustomerIdentityTest {
     }
 
     @Test
-    public void fromPaylineBuyer() {
+    void fromPaylineBuyer() throws InvalidDataException {
         Buyer buyer = createDefaultBuyer();
         CustomerIdentity customerIdentity = CustomerIdentity.Builder.aCustomerIdentity()
                 .fromPayline(buyer)
@@ -50,7 +51,7 @@ public class CustomerIdentityTest {
 
     // PAYLAPMEXT-147
     @Test
-    public void fromPaylineBuyer_noLegalStatus(){
+    void fromPaylineBuyer_noLegalStatus() throws InvalidDataException {
         Buyer buyer = Buyer.BuyerBuilder.aBuyer()
                 .withEmail(TestUtils.generateRamdomEmail())
                 .withFullName(TestUtils.createFullName())
@@ -60,11 +61,11 @@ public class CustomerIdentityTest {
                 .fromPayline(buyer)
                 .build();
 
-        Assertions.assertNotNull(  customerIdentity.getPersonType() );
+        Assertions.assertNotNull(customerIdentity.getPersonType());
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         CustomerIdentity customerIdentity = CustomerIdentity.Builder.aCustomerIdentity()
                 .withBirthName("Doe")
                 .withPersonType(2)

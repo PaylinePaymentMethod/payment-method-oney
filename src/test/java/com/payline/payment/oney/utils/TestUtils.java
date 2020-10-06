@@ -281,6 +281,9 @@ public class TestUtils {
     public static Buyer createDefaultBuyer() {
         return createDefaultBuyer(TestCountry.BE);
     }
+    public static Buyer aBuyer() {
+        return Buyer.BuyerBuilder.aBuyer().withBirthday(new Date()).build();
+    }
 
     public static Buyer createDefaultBuyer(TestCountry testCountry) {
         return createCompleteBuyer(createDefaultPhoneNumbers(testCountry), createDefaultAddresses(testCountry), createFullName());

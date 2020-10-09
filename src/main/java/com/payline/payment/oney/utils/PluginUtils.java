@@ -49,7 +49,7 @@ public class PluginUtils {
         return obj;
     }
 
-    public static <T> T requireNonNull(Map map, String key, String err) throws InvalidRequestException {
+    public static <T> T requireNonNull(Map<String, String> map, String key, String err) throws InvalidRequestException {
         return PluginUtils.requireNonNull((T) map.get(key), err);
     }
 
@@ -417,7 +417,7 @@ public class PluginUtils {
         parametersMap.put(PARTNER_AUTHORIZATION_KEY, authorization);
         parametersMap.put(PARTNER_API_URL, url);
         parametersMap.put(HEADER_COUNTRY_CODE, coutryCode.toUpperCase());
-        if (Boolean.valueOf(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
+        if (Boolean.parseBoolean(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
             parametersMap.put(SECRET_KEY, SECRET_VALUE_ON);
         } else {
             parametersMap.put(SECRET_KEY, SECRET_VALUE_OFF);
@@ -484,14 +484,17 @@ public class PluginUtils {
         String finalAmount = a.substring(0, a.length() - cl)
                 + "."
                 + a.substring(a.length() - cl);
-        return Float.valueOf(finalAmount);
+        return Float.parseFloat(finalAmount);
     }
 
     public static String getCurrency(String s) {
         return s.split(SEPARATOR)[2];
     }
 
-    public static String dateToString(Date date){
+    public static String dateToString(Date date) throws InvalidDataException {
+        if(date == null){
+            throw new InvalidDataException("Date must not be null");
+        }
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         return  df.format(date);
     }

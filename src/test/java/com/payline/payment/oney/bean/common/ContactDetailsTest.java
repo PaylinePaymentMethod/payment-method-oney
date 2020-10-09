@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 
 import static com.payline.payment.oney.utils.TestUtils.createDefaultBuyer;
 
-public class ContactDetailsTest {
+class ContactDetailsTest {
 
     private ContactDetails contactDetails;
 
     @Test
-    public void fromPayline() {
+    void fromPayline() {
 
         contactDetails = ContactDetails.Builder.aContactDetailsBuilder()
                 .fromPayline(createDefaultBuyer())
@@ -22,7 +22,7 @@ public class ContactDetailsTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         contactDetails = ContactDetails.Builder.aContactDetailsBuilder()
                 .withLandLineNumber("0436656565")
                 .withMobilePhoneNumber("0636656565")

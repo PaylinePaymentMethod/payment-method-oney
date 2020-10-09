@@ -13,7 +13,7 @@ import static com.payline.payment.oney.utils.TestUtils.createDefaultRefundReques
 class OneyRefundRequestTest {
 
     @Test
-    public void createRefundRequestOK() throws Exception {
+    void createRefundRequestOK() throws Exception {
         OneyRefundRequest request = OneyRefundRequest.Builder.aOneyRefundRequest()
                 .fromRefundRequest(createDefaultRefundRequest(), true)
                 .build();

@@ -7,14 +7,14 @@ import org.junit.jupiter.api.Test;
 
 import static com.payline.payment.oney.utils.TestUtils.createDefaultBuyer;
 
-public class DeliveryTest {
+class DeliveryTest {
 
 
     private Delivery delivery;
 
 
     @Test
-    public void testDelivery() throws Exception {
+    void testDelivery() {
         delivery = Delivery.Builder.aDeliveryBuilder()
                 .withDeliveryDate("1998-07-12")
                 .withDeliveryModeCode(1)
@@ -34,7 +34,7 @@ public class DeliveryTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    void testToString() {
         delivery = Delivery.Builder.aDeliveryBuilder()
                 .withDeliveryDate("1998-07-12")
                 .withDeliveryModeCode(1)

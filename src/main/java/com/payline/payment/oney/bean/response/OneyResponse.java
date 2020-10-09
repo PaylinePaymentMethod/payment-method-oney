@@ -2,7 +2,6 @@ package com.payline.payment.oney.bean.response;
 
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyBean;
-import com.payline.payment.oney.bean.request.OneyRequest;
 import com.payline.payment.oney.exception.DecryptException;
 import com.payline.payment.oney.utils.chiffrement.OneyCrypto;
 import com.payline.pmapi.logger.LogManager;

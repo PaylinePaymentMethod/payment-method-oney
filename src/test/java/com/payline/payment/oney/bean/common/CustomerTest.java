@@ -5,15 +5,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static com.payline.payment.oney.utils.BeanUtils.*;
-import static com.payline.payment.oney.utils.TestUtils.createDefaultPaymentRequest;
 
-public class CustomerTest {
+class CustomerTest {
 
     private Customer customer;
 
 
     @Test
-    public void customerOK() throws Exception {
+    void customerOK() throws Exception {
         customer = Customer.Builder.aCustomBuilder()
                 .withCustomerIdentity(createDefaultCustomerIdentity())
                 .withLanguageCode("FR")
@@ -27,7 +26,7 @@ public class CustomerTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    void testToString() throws Exception {
         customer = createDefaultCustomer();
 
         Assertions.assertTrue(customer.toString().contains("customer_external_code"));

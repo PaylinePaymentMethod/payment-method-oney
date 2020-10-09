@@ -74,7 +74,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
     }
 
     @Override
-    public Customer assembleCustomer(final PaymentRequest paymentRequest) {
+    public Customer assembleCustomer(final PaymentRequest paymentRequest) throws InvalidDataException {
         Buyer buyer = paymentRequest.getBuyer();
         if (buyer == null) {
             return null;
@@ -83,37 +83,37 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
         Customer.Builder customerBuilder = Customer.Builder.aCustomBuilder()
                 .withCustomerExternalCode(buyer.getCustomerIdentifier())
                 .withLanguageCode(paymentRequest.getLocale().getLanguage())
-                .withCustomerIdentity( this.assembleCustomerIdentity( buyer ) )
-                .withContactDetails( ContactDetails.Builder.aContactDetailsBuilder()
+                .withCustomerIdentity(this.assembleCustomerIdentity(buyer))
+                .withContactDetails(ContactDetails.Builder.aContactDetailsBuilder()
                         .fromPayline(buyer)
                         .build()
                 )
-                .withCustomerAddress( OneyAddress.Builder.aOneyAddressBuilder()
+                .withCustomerAddress(OneyAddress.Builder.aOneyAddressBuilder()
                         .fromPayline(buyer, Buyer.AddressType.BILLING)
                         .build()
                 );
 
         // Trust flag
-        if( paymentRequest.getOrder() != null ){
-            customerBuilder.withTrustFlag( paymentRequest.getOrder().getRiskLevel() );
+        if (paymentRequest.getOrder() != null) {
+            customerBuilder.withTrustFlag(paymentRequest.getOrder().getRiskLevel());
         }
 
         return customerBuilder.build();
     }
 
     @Override
-    public CustomerIdentity assembleCustomerIdentity(Buyer buyer) {
+    public CustomerIdentity assembleCustomerIdentity(Buyer buyer) throws InvalidDataException {
         if (buyer == null) {
             return null;
         }
         CustomerIdentity.Builder ciBuilder = CustomerIdentity.Builder.aCustomerIdentity()
-                .withTaxpayerCode( buyer.getLegalDocument() )
-                .withPersonType( PluginUtils.getPersonType(buyer.getLegalStatus()) );
+                .withTaxpayerCode(buyer.getLegalDocument())
+                .withPersonType(PluginUtils.getPersonType(buyer.getLegalStatus()));
 
         if (buyer.getFullName() != null) {
             Buyer.FullName fullName = buyer.getFullName();
             if (fullName.getCivility() != null) {
-                ciBuilder.withHonorificCode( PluginUtils.getHonorificCode(fullName.getCivility()));
+                ciBuilder.withHonorificCode(PluginUtils.getHonorificCode(fullName.getCivility()));
             }
             ciBuilder.withBirthName(fullName.getLastName())
                     .withFirstName(fullName.getFirstName())
@@ -121,29 +121,33 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
         }
 
         if (buyer.getBirthday() != null) {
-            ciBuilder.withBirthDate( PluginUtils.dateToString(buyer.getBirthday()) );
+            ciBuilder.withBirthDate(PluginUtils.dateToString(buyer.getBirthday()));
         }
+
 
         return ciBuilder.build();
     }
 
     @Override
-    public Delivery assembleDelivery(PaymentRequest paymentRequest){
+    public Delivery assembleDelivery(PaymentRequest paymentRequest) throws InvalidDataException {
         Delivery.Builder deliveryBuilder = Delivery.Builder.aDeliveryBuilder();
 
         Order order = paymentRequest.getOrder();
         Integer deliveryModeCode = null;
         if (order != null) {
-            deliveryBuilder.withDeliveryDate(PluginUtils.dateToString(order.getExpectedDeliveryDate()));
+            if (order.getExpectedDeliveryDate() != null) {
+                deliveryBuilder.withDeliveryDate(PluginUtils.dateToString(order.getExpectedDeliveryDate()));
+            }
+
             if (paymentRequest.getOrder() != null) {
                 deliveryModeCode = PluginUtils.getOneyDeliveryModeCode(order.getDeliveryMode());
-                deliveryBuilder.withDeliveryModeCode( deliveryModeCode );
+                deliveryBuilder.withDeliveryModeCode(deliveryModeCode);
                 deliveryBuilder.withDeliveryOption(PluginUtils.getOneyDeliveryOption(order.getDeliveryTime()));
             }
         }
 
         // set the address_type from the delivery mode code (see JIRA 175)
-        if( deliveryModeCode != null ) {
+        if (deliveryModeCode != null) {
             switch (deliveryModeCode) {
                 case 1:
                 case 2:
@@ -184,50 +188,51 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
 
     @Override
     public List<Journey> assembleJourneyList(Transport transport) {
-        if( transport == null || transport.getLegList() == null || transport.getLegList().isEmpty() ){
-            return null;
-        }
         List<Journey> list = new ArrayList<>();
 
-        for( Leg leg : transport.getLegList() ){
-            Journey.JourneyBuilder jBuilder = new Journey.JourneyBuilder()
-                    .withJourneyNumber( leg.getSegment() )
-                    .withJourneyDate( leg.getDepartureDate() )
-                    .withDepartureCity( leg.getDepartureAirport() )
-                    .withArrivalCity( leg.getArrivalAirport() )
-                    .withTicketCategory( leg.getTicketClass() );
-
-            if( leg.getIsTicketRestricted() != null ){
-                jBuilder.withExchangeabilityFlag( "N".equals(leg.getIsTicketRestricted()) );
+        if (transport != null && transport.getLegList() != null && !transport.getLegList().isEmpty()) {
+            for (Leg leg : transport.getLegList()) {
+                list.add(assembleJourney(leg, transport.getTransportMode(), transport.getTravelerList()));
             }
-            if( leg.getHasTicketInsurance() != null ){
-                jBuilder.withTravelInsuranceFlag( "O".equals(leg.getHasTicketInsurance()) );
-            }
-
-            // Mean of transport
-            MeanOfTransport mot = null;
-            if( transport.getTransportMode() != null ){
-                try {
-                    int transportModeInt = Integer.parseInt( transport.getTransportMode().getValue() );
-                    mot = MeanOfTransport.fromCode( transportModeInt );
-                }
-                catch( NumberFormatException e ){
-                    LOGGER.error("TransportMode [{}] cannot be cast as integer", transport.getTransportMode().getValue());
-                }
-            }
-            if( mot != null ){
-                jBuilder.withMeanOfTransport( mot );
-            }
-
-            // Number of travelers
-            if( transport.getTravelerList() != null ) {
-                jBuilder.withNumberOfTravelers( transport.getTravelerList().size() );
-            }
-
-            list.add( jBuilder.build() );
         }
 
         return list;
+    }
+
+    private Journey assembleJourney(Leg leg, TransportMode mode, List<Traveler> travelers) {
+        Journey.JourneyBuilder jBuilder = new Journey.JourneyBuilder()
+                .withJourneyNumber(leg.getSegment())
+                .withJourneyDate(leg.getDepartureDate())
+                .withDepartureCity(leg.getDepartureAirport())
+                .withArrivalCity(leg.getArrivalAirport())
+                .withTicketCategory(leg.getTicketClass());
+
+        if (leg.getIsTicketRestricted() != null) {
+            jBuilder.withExchangeabilityFlag("N".equals(leg.getIsTicketRestricted()));
+        }
+        if (leg.getHasTicketInsurance() != null) {
+            jBuilder.withTravelInsuranceFlag("O".equals(leg.getHasTicketInsurance()));
+        }
+
+        // Mean of transport
+        MeanOfTransport mot = null;
+        if (mode != null) {
+            try {
+                int transportModeInt = Integer.parseInt(mode.getValue());
+                mot = MeanOfTransport.fromCode(transportModeInt);
+            } catch (NumberFormatException e) {
+                LOGGER.error("TransportMode [{}] cannot be cast as integer", mode.getValue());
+            }
+        }
+        if (mot != null) {
+            jBuilder.withMeanOfTransport(mot);
+        }
+
+        // Number of travelers
+        if (travelers != null) {
+            jBuilder.withNumberOfTravelers(travelers.size());
+        }
+        return jBuilder.build();
     }
 
     @Override
@@ -263,7 +268,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
     }
 
     @Override
-    public Purchase assemblePurchase(final PaymentRequest paymentRequest) {
+    public Purchase assemblePurchase(final PaymentRequest paymentRequest) throws InvalidDataException {
         Purchase.Builder purchaseBuilder = Purchase.Builder.aPurchaseBuilder();
         purchaseBuilder.withExternalReferenceType(EXTERNAL_REFERENCE_TYPE);
 
@@ -280,18 +285,23 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
             }
 
             // Delivery
-            purchaseBuilder.withDelivery( this.assembleDelivery( paymentRequest ) );
+            purchaseBuilder.withDelivery(this.assembleDelivery(paymentRequest));
 
             // Item list
+            int numberOfItem = 0;
             List<Order.OrderItem> orderItems = paymentRequest.getOrder().getItems();
-            purchaseBuilder.withNumberOfItems(orderItems.size());
+            for (Order.OrderItem item: orderItems) {
+                numberOfItem+=item.getQuantity();
+            }
+            purchaseBuilder.withNumberOfItems(numberOfItem);
+
             List<Item> listItems = new ArrayList<>();
 
             // Travel item (same for each item : see PAYLAPMEXT-153).
             Travel travel = null;
-            if( order != null && order.getOrderOTA() != null
-                    && ( order.getOrderOTA().getTransport() != null || order.getOrderOTA().getAccommodation() != null ) ){
-                travel = this.assembleTravel( order );
+            if (order != null && order.getOrderOTA() != null
+                    && (order.getOrderOTA().getTransport() != null || order.getOrderOTA().getAccommodation() != null)) {
+                travel = this.assembleTravel(order);
             }
 
             for (Order.OrderItem item : orderItems) {
@@ -305,24 +315,24 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
                         .withPrice(createFloatAmount(item.getAmount().getAmountInSmallestUnit(), item.getAmount().getCurrency()));
 
                 // Travel
-                itemBuilder.withTravel( travel );
+                itemBuilder.withTravel(travel);
 
                 // Marketplace
-                if( paymentRequest.getSubMerchant() != null && paymentRequest.getSubMerchant().getSubMerchantName() != null ){
-                    itemBuilder.withMarketplaceFlag( 1 )
-                            .withMarketplaceName( paymentRequest.getSubMerchant().getSubMerchantName() );
+                if (paymentRequest.getSubMerchant() != null && paymentRequest.getSubMerchant().getSubMerchantName() != null) {
+                    itemBuilder.withMarketplaceFlag(1)
+                            .withMarketplaceName(paymentRequest.getSubMerchant().getSubMerchantName());
                 } else {
-                    itemBuilder.withMarketplaceFlag( 0 );
+                    itemBuilder.withMarketplaceFlag(0);
                 }
 
-                listItems.add( itemBuilder.build() );
+                listItems.add(itemBuilder.build());
             }
 
             // add delivery fee as an item if needed (see PAYLAPMEXT-238)
             Amount deliveryCharge = order.getDeliveryCharge();
             if (deliveryCharge != null
                     && deliveryCharge.getAmountInSmallestUnit() != null
-                    && !BigInteger.ZERO.equals(deliveryCharge.getAmountInSmallestUnit())){
+                    && !BigInteger.ZERO.equals(deliveryCharge.getAmountInSmallestUnit())) {
 
                 Item item = Item.Builder.aItemBuilder()
                         .withMainItem(0)
@@ -347,7 +357,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
     }
 
     @Override
-    public PurchaseHistory assemblePurchaseHistory(PaymentRequest paymentRequest) {
+    public PurchaseHistory assemblePurchaseHistory(PaymentRequest paymentRequest) throws InvalidDataException {
         // init variables
         PurchaseHistory.Builder purchaseHistoryBuilder = PurchaseHistory.Builder.aPurchaseHistoryBuilder();
 
@@ -360,11 +370,12 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
             if (buyerExtendedHistory.getLastOrderDate() != null) {
                 purchaseHistoryBuilder.withLastPurchaseDate(PluginUtils.dateToString(buyerExtendedHistory.getLastOrderDate()));
             }
-            if( buyerExtendedHistory.getTotalAmount() != null && buyerExtendedHistory.getTotalCurrency() != null ){
+
+            if (buyerExtendedHistory.getTotalAmount() != null && buyerExtendedHistory.getTotalCurrency() != null) {
                 purchaseHistoryBuilder.withTotalAmount(
                         PluginUtils.createFloatAmount(
-                                BigInteger.valueOf( buyerExtendedHistory.getTotalAmount() ),
-                                Currency.getInstance( buyerExtendedHistory.getTotalCurrency() )
+                                BigInteger.valueOf(buyerExtendedHistory.getTotalAmount()),
+                                Currency.getInstance(buyerExtendedHistory.getTotalCurrency())
                         )
                 );
             }
@@ -375,51 +386,59 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
 
     @Override
     public List<Stay> assembleStayList(OrderOTA orderOTA) {
-        if( orderOTA == null || orderOTA.getAccommodation() == null ){
+        if (orderOTA == null || orderOTA.getAccommodation() == null) {
             return null;
         }
         Accommodation accommodation = orderOTA.getAccommodation();
 
         Stay.StayBuilder stayBuilder = new Stay.StayBuilder()
-                .withArrivalDate( accommodation.getCheckInDate() )
-                .withDepartureDate( accommodation.getCheckOutDate() )
-                .withVehicleRentalFlag( orderOTA.getCarRental() != null );
+                .withArrivalDate(accommodation.getCheckInDate())
+                .withDepartureDate(accommodation.getCheckOutDate())
+                .withVehicleRentalFlag(orderOTA.getCarRental() != null);
 
-        if( accommodation.getHasInsurance() != null ){
-            stayBuilder.withStayInsuranceFlag( "O".equals( accommodation.getHasInsurance() ) );
+        if (accommodation.getHasInsurance() != null) {
+            stayBuilder.withStayInsuranceFlag("O".equals(accommodation.getHasInsurance()));
         }
 
         // Place of residence
         List<String> placeElements = new ArrayList<>();
-        if( accommodation.getName() != null ){ placeElements.add(accommodation.getName()); }
-        if( accommodation.getCity() != null ){ placeElements.add(accommodation.getCity()); }
-        if( accommodation.getZipCode() != null ){ placeElements.add(accommodation.getZipCode()); }
-        if( orderOTA.getCountryDestination() != null ){ placeElements.add(orderOTA.getCountryDestination()); }
+        if (accommodation.getName() != null) {
+            placeElements.add(accommodation.getName());
+        }
+        if (accommodation.getCity() != null) {
+            placeElements.add(accommodation.getCity());
+        }
+        if (accommodation.getZipCode() != null) {
+            placeElements.add(accommodation.getZipCode());
+        }
+        if (orderOTA.getCountryDestination() != null) {
+            placeElements.add(orderOTA.getCountryDestination());
+        }
         String place = PluginUtils.truncate(String.join(" ", placeElements), 64);
-        stayBuilder.withPlaceOfResidence( place );
+        stayBuilder.withPlaceOfResidence(place);
 
         // Number of travelers
-        if( orderOTA.getTransport() != null && orderOTA.getTransport().getTravelerList() != null ){
-            stayBuilder.withNumberOfTravelers( orderOTA.getTransport().getTravelerList().size() );
+        if (orderOTA.getTransport() != null && orderOTA.getTransport().getTravelerList() != null) {
+            stayBuilder.withNumberOfTravelers(orderOTA.getTransport().getTravelerList().size());
         }
 
         // Stay type
-        if( accommodation.getType() != null ) {
+        if (accommodation.getType() != null) {
             if (accommodation.getType() == 0 || accommodation.getType() == 4) {
-                stayBuilder.withStayType( StayType.OTHER );
+                stayBuilder.withStayType(StayType.OTHER);
             } else {
-                stayBuilder.withStayType( StayType.fromCode(accommodation.getType()) );
+                stayBuilder.withStayType(StayType.fromCode(accommodation.getType()));
             }
         }
 
         List<Stay> list = new ArrayList<>();
-        list.add( stayBuilder.build() );
+        list.add(stayBuilder.build());
         return list;
     }
 
     @Override
     public Travel assembleTravel(Order order) {
-        if( order.getOrderOTA() == null ){
+        if (order.getOrderOTA() == null) {
             return null;
         }
 
@@ -429,20 +448,20 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
         Transport transport = orderOTA.getTransport();
 
         // Main traveler info
-        if( transport != null
+        if (transport != null
                 && !transport.getTravelerList().isEmpty()
-                && transport.getTravelerList().get(0) != null ){
+                && transport.getTravelerList().get(0) != null) {
             Traveler mainTraveler = transport.getTravelerList().get(0);
-            travelBuilder.withMainTravelerFirstname( mainTraveler.getFirstName() )
-                    .withMainTravelerSurname( mainTraveler.getLastName() )
-                    .withMainTravelerBirthdate( mainTraveler.getBirthDate() );
+            travelBuilder.withMainTravelerFirstname(mainTraveler.getFirstName())
+                    .withMainTravelerSurname(mainTraveler.getLastName())
+                    .withMainTravelerBirthdate(mainTraveler.getBirthDate());
         }
 
         // Journey
-        travelBuilder.withJourney( this.assembleJourneyList( transport ) );
+        travelBuilder.withJourney(this.assembleJourneyList(transport));
 
         // Stay
-        travelBuilder.withStay( this.assembleStayList( orderOTA ) );
+        travelBuilder.withStay(this.assembleStayList(orderOTA));
 
         return travelBuilder.build();
     }

@@ -12,14 +12,14 @@ import static com.payline.payment.oney.bean.response.TransactionStatusResponse.c
 import static com.payline.payment.oney.utils.TestUtils.createStringResponse;
 
 
-public class TransactionStatusResponseTest extends OneyConfigBean {
+class TransactionStatusResponseTest extends OneyConfigBean {
 
 
     private String key = "66s581CG5W+RLEqZHAGQx+vskjy660Kt8x8rhtRpXtY=";
 
 
     @Test
-    public void transactionStatusNotEncrypted() throws DecryptException, MalformedJsonException {
+    void transactionStatusNotEncrypted() throws DecryptException, MalformedJsonException {
         StringResponse encryptedResponse = createStringResponse(400, "OK", "{\"purchase\":{\"status_code\":\"PENDING\",\"status_label\":\"Waiting for customer validation\"}}");
 
 
@@ -33,7 +33,7 @@ public class TransactionStatusResponseTest extends OneyConfigBean {
     }
 
     @Test
-    public void transactionStatusEncrypted() throws DecryptException, MalformedJsonException {
+    void transactionStatusEncrypted() throws DecryptException, MalformedJsonException {
         StringResponse encryptedResponse = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ul3aakmok0anPtpBvW1vZ3e83c7evaIMgKsuqlJpPjg407AoMkFm94736cZcnpC81qiX4V8n9IxMD1E50QBAOkMZ1S8Pf90kxhXSDe3wt4J13\"}");
 
 
@@ -42,7 +42,6 @@ public class TransactionStatusResponseTest extends OneyConfigBean {
         TransactionStatusResponse status1 = createTransactionStatusResponseFromJson(encryptedResponse.getContent(), key);
         Assertions.assertEquals(PENDING, status1.getStatusPurchase().getStatusCode());
         Assertions.assertEquals("Waiting for customer validation", status1.getStatusPurchase().getStatusLabel());
-
 
     }
 

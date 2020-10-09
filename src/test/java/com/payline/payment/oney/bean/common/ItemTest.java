@@ -12,14 +12,14 @@ import java.util.List;
 import static com.payline.payment.oney.utils.TestUtils.createAmount;
 import static com.payline.payment.oney.utils.TestUtils.createOrderItem;
 
-public class ItemTest {
+class ItemTest {
 
     private Item item;
 
     private static final Currency CURRENCY = Currency.getInstance("EUR");
 
     @Test
-    public void item() throws Exception {
+    void item() {
         item = Item.Builder.aItemBuilder()
                 .withMainItem(0)
                 .withCategoryCode(0)
@@ -39,7 +39,7 @@ public class ItemTest {
     }
 
     @Test
-    public void itemFromPaylineRequest() throws Exception {
+    void itemFromPaylineRequest() {
         item = Item.Builder.aItemBuilder()
                 .fromPayline(createOrderItem("someRef", createAmount(CURRENCY)))
                 .build();
@@ -53,7 +53,7 @@ public class ItemTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    void testToString() {
         item = Item.Builder.aItemBuilder()
                 .fromPayline(createOrderItem("someRefe", createAmount(CURRENCY)))
                 .withTravel(new Travel.TravelBuilder().build())
@@ -70,7 +70,7 @@ public class ItemTest {
     }
 
     @Test
-    public void defineMainItem() throws Exception {
+    void defineMainItem() {
         //to implement
         List<Item> itemList = new ArrayList<>();
         itemList.add(Item.Builder.aItemBuilder()

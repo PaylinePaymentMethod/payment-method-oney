@@ -3,13 +3,13 @@ package com.payline.payment.oney.bean.common;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PurchaseCancelTest {
+class PurchaseCancelTest {
 
     private PurchaseCancel purchaseCancel;
 
 
     @Test
-    public void testPurchaseCancel() throws Exception {
+    void testPurchaseCancel() {
         purchaseCancel = PurchaseCancel.Builder.aPurchaseCancelBuilder()
                 .withRefundFlag(true)
                 .withReasonCode(0)
@@ -21,7 +21,7 @@ public class PurchaseCancelTest {
 
 
     @Test
-    public void testPurchaseCancel1() throws Exception {
+    void testPurchaseCancel1() {
         purchaseCancel = PurchaseCancel.Builder.aPurchaseCancelBuilder()
                 .withRefundFlag(true)
                 .withReasonCode(1)
@@ -31,7 +31,7 @@ public class PurchaseCancelTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    void testToString() {
         purchaseCancel = PurchaseCancel.Builder.aPurchaseCancelBuilder()
                 .withRefundFlag(true)
                 .withReasonCode(0)

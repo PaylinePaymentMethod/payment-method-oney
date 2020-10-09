@@ -14,7 +14,7 @@ import java.util.Map;
 import static com.payline.payment.oney.utils.TestUtils.createDefaultBuyer;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class OneyAddressTest {
+class OneyAddressTest {
 
     private OneyAddress oneyAddress;
 
@@ -36,7 +36,7 @@ public class OneyAddressTest {
     }
 
     @Test
-    public void customerAddressOK() throws Exception {
+    void customerAddressOK() {
         oneyAddress = OneyAddress.Builder.aOneyAddressBuilder()
                 .fromPayline(createDefaultBuyer(), Buyer.AddressType.BILLING)
                 .build();
@@ -50,7 +50,7 @@ public class OneyAddressTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    void testToString() {
 
         oneyAddress = OneyAddress.Builder.aOneyAddressBuilder()
                 .withLine1("12 place de la Comedie")

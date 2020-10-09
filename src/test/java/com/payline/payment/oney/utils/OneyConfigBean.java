@@ -1,11 +1,8 @@
 package com.payline.payment.oney.utils;
 
 import com.payline.payment.oney.utils.properties.service.ConfigPropertiesEnum;
-import com.payline.pmapi.logger.LogManager;
 import mockit.Mock;
 import mockit.MockUp;
-import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 

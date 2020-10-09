@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 import static com.payline.payment.oney.utils.OneyConstants.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ConfigurationServiceImplTest {
+class ConfigurationServiceImplTest {
 
     @InjectMocks
     private ConfigurationServiceImpl service;
@@ -30,7 +30,7 @@ public class ConfigurationServiceImplTest {
     }
 
     @Test
-    public void testGetParametersKeys() {
+    void testGetParametersKeys() {
         List<AbstractParameter> parameters = service.getParameters(Locale.FRANCE);
         Pattern p = Pattern.compile("[a-zA-Z\\.]*");
         for (AbstractParameter param : parameters) {
@@ -39,7 +39,7 @@ public class ConfigurationServiceImplTest {
     }
 
     @Test
-    public void testGetParametersKeys_KO1() {
+    void testGetParametersKeys_KO1() {
         // merchant GUID
         final InputParameter merchantGuid = new InputParameter();
         merchantGuid.setKey("test_test");
@@ -57,7 +57,7 @@ public class ConfigurationServiceImplTest {
     }
 
     @Test
-    public void testGetParametersKeys_KO2() {
+    void testGetParametersKeys_KO2() {
         // merchant GUID
         final InputParameter merchantGuid = new InputParameter();
         merchantGuid.setKey("test-test");
@@ -75,7 +75,7 @@ public class ConfigurationServiceImplTest {
     }
 
     @Test
-    public void testGetParametersKeys_OkExt() {
+    void testGetParametersKeys_OkExt() {
         // merchant GUID
         final InputParameter merchantGuid = new InputParameter();
         merchantGuid.setKey("test.test");
@@ -94,7 +94,7 @@ public class ConfigurationServiceImplTest {
 
 
     @Test
-    public void testGetParameters() {
+    void testGetParameters() {
         List<AbstractParameter> parameters = service.getParameters(Locale.FRANCE);
         //Assert we have 3 parameters
         Assertions.assertNotNull(parameters);
@@ -114,7 +114,7 @@ public class ConfigurationServiceImplTest {
     }
 
     @Test
-    public void testGetReleaseInformation_ok() {
+    void testGetReleaseInformation_ok() {
         // when: getReleaseInformation method is called
         ReleaseInformation releaseInformation = service.getReleaseInformation();
 
@@ -128,7 +128,7 @@ public class ConfigurationServiceImplTest {
 
     //
     @Test
-    public void testGetReleaseInformation_versionFormat() {
+    void testGetReleaseInformation_versionFormat() {
         // when: getReleaseInformation method is called
         ReleaseInformation releaseInformation = service.getReleaseInformation();
 

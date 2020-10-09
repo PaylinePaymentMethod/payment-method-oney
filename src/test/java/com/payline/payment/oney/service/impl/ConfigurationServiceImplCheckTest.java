@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
  * Validates the {@link ConfigurationServiceImpl#check(ContractParametersCheckRequest)} method.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ConfigurationServiceImplCheckTest {
+class ConfigurationServiceImplCheckTest {
 
     @InjectMocks
     private ConfigurationServiceImpl service;
@@ -81,7 +81,20 @@ public class ConfigurationServiceImplCheckTest {
     }
 
     @Test
-    public void check_ok(){
+    void check_okISOCountry(){
+        // when: calling check method
+        Map<String, String> errors = service.check( this.createContractParametersCheckRequest() );
+
+        // then: no error
+        Assertions.assertEquals(0, errors.size());
+    }
+
+    @Test
+    void check_okNonISOCountryCodeInList(){
+        // put a non ISO country Code, accepted in the list of countries
+        contractProperties.put(COUNTRY_CODE_KEY, new ContractProperty("SP"));
+        partnerConfiguration.put(PSP_GUID_KEY + ".sp", "psp_id_test");
+        partnerConfiguration.put(PARTNER_AUTHORIZATION_KEY + ".sp", "mykey");
         // when: calling check method
         Map<String, String> errors = service.check( this.createContractParametersCheckRequest() );
 
@@ -103,7 +116,7 @@ public class ConfigurationServiceImplCheckTest {
     }
 
     @Test
-    public void check_missingOpc(){
+    void check_missingOpc(){
         // given: no OPC is provided
         contractProperties.put(OPC_KEY, new ContractProperty(""));
 
@@ -116,7 +129,7 @@ public class ConfigurationServiceImplCheckTest {
     }
 
     @Test
-    public void check_missingCountryCode(){
+    void check_missingCountryCode(){
         // given: no country code is provided
         contractProperties.remove(COUNTRY_CODE_KEY);
 
@@ -129,7 +142,7 @@ public class ConfigurationServiceImplCheckTest {
     }
 
     @Test
-    public void check_nonIsoCountryCode(){
+    void check_nonIsoCountryCode(){
         // given: a non-iso country code
         contractProperties.put(COUNTRY_CODE_KEY, new ContractProperty("BEL"));
 
@@ -142,7 +155,7 @@ public class ConfigurationServiceImplCheckTest {
     }
 
     @Test
-    public void check_nonIsoMerchantLanguageCode(){
+    void check_nonIsoMerchantLanguageCode(){
         // given: a non-iso merchant language code
         contractProperties.put(LANGUAGE_CODE_KEY, new ContractProperty("fra"));
 
@@ -155,7 +168,7 @@ public class ConfigurationServiceImplCheckTest {
     }
 
     @Test
-    public void check_missingPspGuid(){
+    void check_missingPspGuid(){
         // given: empty PSP guid
         partnerConfiguration.put(PSP_GUID_KEY + ".be", "");
 
@@ -168,7 +181,7 @@ public class ConfigurationServiceImplCheckTest {
     }
 
     @Test
-    public void check_missingPartnerAuthorizationKey(){
+    void check_missingPartnerAuthorizationKey(){
         // given: empty partner authorization key
         partnerConfiguration.put(PARTNER_AUTHORIZATION_KEY + ".be", "");
 

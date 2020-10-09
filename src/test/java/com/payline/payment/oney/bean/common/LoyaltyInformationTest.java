@@ -3,13 +3,13 @@ package com.payline.payment.oney.bean.common;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class LoyaltyInformationTest {
+class LoyaltyInformationTest {
 
     private LoyaltyInformation loyaltyInformation;
 
 
     @Test
-    public void loyaltyInformationOK() throws Exception {
+    void loyaltyInformationOK() {
         loyaltyInformation = LoyaltyInformation.Builder.aLoyaltyInformationBuilder()
                 .withLoyaltyId("1")
                 .withType("mytype")
@@ -25,7 +25,7 @@ public class LoyaltyInformationTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    void testToString() {
         loyaltyInformation = LoyaltyInformation.Builder.aLoyaltyInformationBuilder()
                 .withLoyaltyId("1")
                 .withType("mytype")

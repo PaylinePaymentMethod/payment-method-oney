@@ -92,7 +92,7 @@ public class OneyNotificationResponse extends OneyResponse {
         }
 
         //Cas reponse est chiffree : on dechiffre la reponse afin de recuperer le statut de la transaction
-        if (Boolean.valueOf(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
+        if (Boolean.parseBoolean(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
             String decryptedMessage = OneyResponse.decryptMessage(oneyNotificationResponse.getEncryptedMessage(), encryptKey);
 
             oneyNotificationResponse = parser.fromJson(decryptedMessage, OneyNotificationResponse.class);

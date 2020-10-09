@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class PaymentFormConfigurationServiceImplTest {
+class PaymentFormConfigurationServiceImplTest {
 
 
     @InjectMocks
@@ -42,7 +42,7 @@ public class PaymentFormConfigurationServiceImplTest {
 
 
     @Test
-    public void testGetPaymentFormConfiguration() {
+    void testGetPaymentFormConfiguration() {
         final Environment environment = new Environment("http://google.com/", AbstractPaymentIntegration.SUCCESS_URL, "http://localhost/cancelurl.com/", true);
         final String nbEcheances = "99x";
         ContractConfiguration contractConfiguration = createContractConfiguration();
@@ -67,7 +67,7 @@ public class PaymentFormConfigurationServiceImplTest {
     }
 
     @Test
-    public void testGetPaymentFormLogo() {
+    void testGetPaymentFormLogo() {
         //Mock PaymentFormLogoRequest
         PaymentFormLogoRequest paymentFormLogoRequest = Mockito.mock(PaymentFormLogoRequest.class);
         when(paymentFormLogoRequest.getLocale()).thenReturn(Locale.FRANCE);
@@ -83,7 +83,7 @@ public class PaymentFormConfigurationServiceImplTest {
     }
 
     @Test
-    public void testGetLogo() {
+    void testGetLogo() {
         // when: getLogo is called
         String paymentMethodIdentifier = "Oney";
         PaymentFormLogo paymentFormLogo = service.getLogo(paymentMethodIdentifier, Locale.FRANCE);

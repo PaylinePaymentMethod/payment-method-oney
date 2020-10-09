@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.payline.payment.oney.utils.OneyConstants.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PortugalTestIT extends TestIT {
 

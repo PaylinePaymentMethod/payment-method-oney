@@ -12,13 +12,13 @@ import static com.payline.payment.oney.bean.response.PaymentErrorResponse.paymen
 import static com.payline.payment.oney.utils.OneyErrorHandler.handleOneyFailureResponse;
 import static com.payline.payment.oney.utils.TestUtils.createStringResponse;
 
-public class OneyFailureResponseTest {
+class OneyFailureResponseTest {
 
 
     private static final String SEP = " - ";
 
     @Test
-    public void testOneyFailureResponse() throws MalformedJsonException {
+    void testOneyFailureResponse() throws MalformedJsonException {
         StringResponse stringResponse = createStringResponse(400, "Bad request", "{\"Payments_Error_Response\":{\"error_list \":[{\"field\":\"purchase.delivery.delivery_address.country_code\",\"error_code\":\"ERR_02\",\"error_label\":\"Size of the field should be equal to [3] characters\"},{\"field\":\"purchase.item_list.category_code\",\"error_code\":\"ERR_04\",\"error_label\":\"Value of the field is invalid [{Integer}]\"},{\"field\":\"purchase.item_list.category_code\",\"error_code\":\"ERR_04\",\"error_label\":\"Value of the field is invalid [{Integer}]\"},{\"field\":\"customer.customer_address.country_code\",\"error_code\":\"ERR_02\",\"error_label\":\"Size of the field should be equal to [3] characters\"},{\"field\":\"payment.payment_type\",\"error_code\":\"ERR_03\",\"error_label\":\"Format of the field is invalid [{Integer}]\"}]}}");
 
         OneyFailureResponse failureCause = new OneyFailureResponse(stringResponse.getCode(), stringResponse.getMessage(), stringResponse.getContent(), paymentErrorResponseFromJson(stringResponse.getContent()));
@@ -32,7 +32,7 @@ public class OneyFailureResponseTest {
 
 
     @Test
-    public void tesHandleOneyFailureResponseFromCause2() throws MalformedJsonException {
+    void tesHandleOneyFailureResponseFromCause2() throws MalformedJsonException {
         String json = "{\"Payments_Error_Response\":{\"error_list \":[{\"field\":\"payment.business_transaction.code\",\"error_code\":\"ERR_02\",\"error_label\":\"Size of the field should be less than or equal to [5] characters\"}]}}";
 
         StringResponse stringResponse = createStringResponse(400, "Bad request", json);
@@ -57,7 +57,7 @@ public class OneyFailureResponseTest {
 
 
     @Test
-    public void paylineFailureResponse_PAYLAPMEXT_98() throws MalformedJsonException {
+    void paylineFailureResponse_PAYLAPMEXT_98() throws MalformedJsonException {
         String json = "{\"Payments_Error_Response\":{\"error_list\":[{\"error\":{\"field\":\"language_code\",\"error_code\":\"ERR_04\",\"error_label\":\"Value of the field is invalid [{String}]\"}},{\"error\":{\"field\":\"Brand_language_code\",\"error_code\":\"ERR_04\",\"error_label\":\"Value of the field is invalid [{String}]\"}},{\"error\":{\"field\":\"customer.language_code\",\"error_code\":\"ERR_04\",\"error_label\":\"Value of the field is invalid [{String}]\"}}]}}";
 
         StringResponse stringResponse = createStringResponse(400, "Bad request", json);
@@ -84,7 +84,7 @@ public class OneyFailureResponseTest {
 
 
     @Test
-    public void paylineFailureResponse_truncate() throws MalformedJsonException {
+    void paylineFailureResponse_truncate() throws MalformedJsonException {
         String json = "{\"Payments_Error_Response\":{\"error_list\":[{\"error\":{\"field\":\"language_code_language_code_language_code_language_code\",\"error_code\":\"ERR_04\",\"error_label\":\"Value of the field is invalid [{String}]\"}},{\"error\":{\"field\":\"Brand_language_code\",\"error_code\":\"ERR_04\",\"error_label\":\"Value of the field is invalid [{String}]\"}},{\"error\":{\"field\":\"customer.language_code\",\"error_code\":\"ERR_04\",\"error_label\":\"Value of the field is invalid [{String}]\"}}]}}";
 
         StringResponse stringResponse = createStringResponse(400, "Bad request", json);

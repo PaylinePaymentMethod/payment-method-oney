@@ -22,7 +22,7 @@ import java.util.Map;
 import static com.payline.payment.oney.utils.OneyConstants.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class OneyPaymentRequestTest {
+class OneyPaymentRequestTest {
 
     private OneyPaymentRequest oneyPaymentRequest;
 
@@ -42,7 +42,7 @@ public class OneyPaymentRequestTest {
     private Purchase purchase;
 
     @BeforeAll
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         beanAssembleService = BeanAssemblerServiceImpl.getInstance();
         paymentRequest = TestUtils.createDefaultPaymentRequest();
         merchGuid = RequestConfigServiceImpl.INSTANCE.getParameterValue(paymentRequest, MERCHANT_GUID_KEY);
@@ -58,7 +58,7 @@ public class OneyPaymentRequestTest {
     }
 
     @Test
-    public void buildOneyPaymentRequest() throws Exception {
+    void buildOneyPaymentRequest() throws Exception {
 
         Map<String, String> map = new HashMap<>();
         map.put("test", "test");

@@ -5,13 +5,13 @@ import com.payline.payment.oney.utils.chiffrement.OneyCrypto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class OneyCryptoTest {
+class OneyCryptoTest {
 
     private OneyCrypto crypto;
 
 
     @Test
-    public void encryptOK() throws DecryptException {
+    void encryptOK() throws DecryptException {
         crypto = new OneyCrypto("66s581CG5W+RLEqZHAGQx+vskjy660Kt8x8rhtRpXtY=");
 
         String message = "mon message a chiffrer";
@@ -23,7 +23,7 @@ public class OneyCryptoTest {
 
 
     @Test
-    public void decryptOK() throws DecryptException {
+    void decryptOK() throws DecryptException {
         crypto = new OneyCrypto("66s581CG5W+RLEqZHAGQx+vskjy660Kt8x8rhtRpXtY=");
 
         String messageEncrypted = "SE7ZT07NBY+cOL7B3/jLRdfFBH96VX2mMyxioBE7F8o=";
@@ -50,7 +50,7 @@ public class OneyCryptoTest {
     }
 
     @Test
-    public void encryptWrongKey() {
+    void encryptWrongKey() {
 
         Throwable exception = Assertions.assertThrows(DecryptException.class, () -> {
             crypto = new OneyCrypto("maCle");

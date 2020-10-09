@@ -4,13 +4,13 @@ import com.payline.payment.oney.bean.common.payment.BusinessTransactionData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class BusinessTransactionDataTest {
+class BusinessTransactionDataTest {
 
     private BusinessTransactionData businessTransactionData;
 
 
     @Test
-    public void businessTransactionDataOK() throws Exception {
+    void businessTransactionDataOK() {
         businessTransactionData = BusinessTransactionData.Builder.aBusinessTransactionDataBuilder()
                 .withCode("24")
                 .withBusinessTransactionType("type")
@@ -22,7 +22,7 @@ public class BusinessTransactionDataTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    void testToString() {
         businessTransactionData = BusinessTransactionData.Builder.aBusinessTransactionDataBuilder()
                 .withCode("24")
                 .withBusinessTransactionType("type")

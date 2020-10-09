@@ -5,8 +5,6 @@ import com.payline.payment.oney.bean.request.OneyRefundRequest;
 import com.payline.payment.oney.bean.request.OneyTransactionStatusRequest;
 import com.payline.payment.oney.exception.PluginTechnicalException;
 import com.payline.payment.oney.utils.OneyConfigBean;
-import com.payline.payment.oney.utils.OneyConstants;
-import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.http.OneyHttpClient;
 import com.payline.payment.oney.utils.http.StringResponse;
 import com.payline.pmapi.bean.common.FailureCause;
@@ -29,13 +27,13 @@ import static com.payline.payment.oney.utils.TestUtils.createStringResponse;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class RefundServiceImplTest extends OneyConfigBean {
+class RefundServiceImplTest extends OneyConfigBean {
     private String responseOk = "{\"purchase\":{\"status_code\":\"FUNDED\",\"status_label\":\"Transaction is completed\"}}";
     private String responseOkCiphered = "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ulzsMg0QfZ1N009CwI1PLZzBnbfv6/Enufe5TriN1gKQkEmbMYU0PMtHdk+eF7boW/lsIc5PmjpFX1E/4MUJGkzI=\"}";
     private String responseKOCiphered = "{\"encrypted_message\":\"ymDHJ7HBRe49whKjH1HDtA==\"}";
 
     @InjectMocks
-    public RefundServiceImpl service;
+    RefundServiceImpl service;
 
     @Spy
     OneyHttpClient httpClient;
@@ -47,7 +45,7 @@ public class RefundServiceImplTest extends OneyConfigBean {
     }
 
     @Test
-    public void refundRequestTestOK() throws Exception {
+    void refundRequestTestOK() throws Exception {
         StringResponse responseMocked1 = createStringResponse(200, "OK", responseOk);
         Mockito.doReturn(responseMocked1).when(httpClient).doGet(Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap());
 
@@ -64,7 +62,7 @@ public class RefundServiceImplTest extends OneyConfigBean {
     }
 
     @Test
-    public void refundRequestTestKO() throws Exception {
+    void refundRequestTestKO() throws Exception {
         StringResponse responseMocked1 = createStringResponse(200, "OK", responseOkCiphered);
         Mockito.doReturn(responseMocked1).when(httpClient).doGet(Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap());
 
@@ -81,7 +79,7 @@ public class RefundServiceImplTest extends OneyConfigBean {
     }
 
     @Test
-    public void handleStatusRequestEncrypted() throws Exception {
+    void handleStatusRequestEncrypted() throws Exception {
         StringResponse responseMocked1 = createStringResponse(200, "OK", responseOkCiphered);
         Mockito.doReturn(responseMocked1).when(httpClient).doGet(Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap());
         RefundRequest refundReq = createDefaultRefundRequest();
@@ -92,7 +90,7 @@ public class RefundServiceImplTest extends OneyConfigBean {
     }
 
     @Test
-    public void handleStatusRequestNotEncrypted() throws Exception {
+    void handleStatusRequestNotEncrypted() throws Exception {
         StringResponse responseMocked1 = createStringResponse(200, "OK", responseOk);
         Mockito.doReturn(responseMocked1).when(httpClient).doGet(Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap());
         RefundRequest refundReq = createDefaultRefundRequest();
@@ -104,7 +102,7 @@ public class RefundServiceImplTest extends OneyConfigBean {
 
 
     @Test
-    public void refundRequest_malformedStatusResponseOK() throws PluginTechnicalException {
+    void refundRequest_malformedStatusResponseOK() throws PluginTechnicalException {
         // given a malformed HTTP response received to the status request
         StringResponse responseMocked = createStringResponse(200, "OK", "[]");
         Mockito.doReturn(responseMocked).when(httpClient).initiateGetTransactionStatus(Mockito.any(OneyTransactionStatusRequest.class), anyBoolean());
@@ -122,7 +120,7 @@ public class RefundServiceImplTest extends OneyConfigBean {
      */
 
     @Test
-    public void refundRequest_malformedRefundResponseKO() throws PluginTechnicalException {
+    void refundRequest_malformedRefundResponseKO() throws PluginTechnicalException {
         // given a malformed HTTP response received to the refund/cancel request
         StringResponse responseMocked = createStringResponse(404, "Bad Request", "[]");
         Mockito.doReturn(responseMocked).when(httpClient).initiateRefundPayment(Mockito.any(OneyRefundRequest.class), anyBoolean());
@@ -136,7 +134,7 @@ public class RefundServiceImplTest extends OneyConfigBean {
     }
 
     @Test
-    public void refundRequest_malformedRefundResponseOK() throws PluginTechnicalException {
+    void refundRequest_malformedRefundResponseOK() throws PluginTechnicalException {
         // given a malformed HTTP response received to the refund/cancel request
         StringResponse responseMocked = createStringResponse(200, "OK", "[]");
         Mockito.doReturn(responseMocked).when(httpClient).initiateRefundPayment(Mockito.any(OneyRefundRequest.class), anyBoolean());

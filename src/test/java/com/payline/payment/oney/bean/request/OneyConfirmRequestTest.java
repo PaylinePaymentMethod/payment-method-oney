@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Test;
 
 import static com.payline.payment.oney.utils.TestUtils.createCompleteRedirectionPaymentBuilder;
 
-public class OneyConfirmRequestTest {
+class OneyConfirmRequestTest {
 
     private OneyConfirmRequest paymentRequest;
 
     @Test
-    public void buildOneyConfirmRequest() throws Exception {
+    void buildOneyConfirmRequest() throws Exception {
 
         paymentRequest = new OneyConfirmRequest.Builder(createCompleteRedirectionPaymentBuilder())
                 .build();

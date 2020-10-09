@@ -158,3 +158,9 @@ test {
     exclude('**/*IT.class')
     jvmArgs "-javaagent:${classpath.find { it.name.contains("jmockit") }.absolutePath}"
 }
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}

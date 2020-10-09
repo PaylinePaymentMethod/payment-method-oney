@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import static com.payline.payment.oney.utils.BeanUtils.createDelivery;
 import static com.payline.payment.oney.utils.BeanUtils.createItemList;
-import static com.payline.payment.oney.utils.TestUtils.createCompletePaymentRequestBuilder;
 
 public class PurchaseTest {
     private Purchase purchase;

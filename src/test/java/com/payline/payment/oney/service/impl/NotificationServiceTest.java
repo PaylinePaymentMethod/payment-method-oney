@@ -10,7 +10,6 @@ import com.payline.pmapi.bean.common.OnHoldTransactionStatus;
 import com.payline.pmapi.bean.common.SuccessTransactionStatus;
 import com.payline.pmapi.bean.notification.request.NotificationRequest;
 import com.payline.pmapi.bean.notification.response.NotificationResponse;
-import com.payline.pmapi.bean.notification.response.impl.IgnoreNotificationResponse;
 import com.payline.pmapi.bean.notification.response.impl.PaymentResponseByNotificationResponse;
 import com.payline.pmapi.bean.notification.response.impl.TransactionStateChangedResponse;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseFailure;

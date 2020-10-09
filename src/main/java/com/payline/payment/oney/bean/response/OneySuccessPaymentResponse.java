@@ -55,7 +55,7 @@ public class OneySuccessPaymentResponse extends OneyResponse {
         }
 
         //Cas reponse est chiffree : on dechiffre la reponse afin de recuperer l'url a renvoyer
-        if (Boolean.valueOf(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
+        if (Boolean.parseBoolean(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
             String decryptedMessage = OneyResponse.decryptMessage(paymentSuccessResponse.getEncryptedMessage(), encryptKey);
             paymentSuccessResponse.setReturnedUrl(parser.fromJson(decryptedMessage, OneySuccessPaymentResponse.class).getReturnedUrl());
         }

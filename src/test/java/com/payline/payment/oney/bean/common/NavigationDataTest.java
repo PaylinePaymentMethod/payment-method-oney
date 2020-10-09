@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class NavigationDataTest {
+class NavigationDataTest {
 
     private NavigationData navigationData;
 
@@ -19,13 +19,13 @@ public class NavigationDataTest {
     private PaymentRequest paymentRequest;
 
     @BeforeAll
-    public void setUp() {
+    void setUp() {
         beanAssembleService = BeanAssemblerServiceImpl.getInstance();
         paymentRequest = TestUtils.createDefaultPaymentRequest();
     }
 
     @Test
-    public void buildNavigationData() {
+    void buildNavigationData() {
         navigationData = NavigationData.Builder.aNavigationDataBuilder()
                 .withFailUrl("fail/url/")
                 .withSuccesUrl("success/url/")
@@ -41,7 +41,7 @@ public class NavigationDataTest {
     }
 
     @Test
-    public void buildNavigationDataFromPayline() throws Exception {
+    void buildNavigationDataFromPayline() throws Exception {
         navigationData = beanAssembleService.assembleNavigationData(paymentRequest);
 
         Assertions.assertEquals("http://google.com/", navigationData.getNotificationUrl());
@@ -51,7 +51,7 @@ public class NavigationDataTest {
     }
 
     @Test
-    public void toStringTest() throws Exception {
+    void toStringTest() throws Exception {
 
         navigationData = beanAssembleService.assembleNavigationData(paymentRequest);
 

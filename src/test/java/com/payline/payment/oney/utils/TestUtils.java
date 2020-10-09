@@ -49,7 +49,7 @@ public class TestUtils {
     private static final String EXTERNAL_REFERENCE = "123456789A";
     private static final String CONFIRM_EXTERNAL_REFERENCE = PluginUtils.fullPurchaseReference( EXTERNAL_REFERENCE );
 
-    private static final Currency CURRENCY_EUR = Currency.getInstance("EUR");
+    public static final Currency CURRENCY_EUR = Currency.getInstance("EUR");
     private static final Locale LOCALE_FR = Locale.FRANCE;
 
     public static final Environment TEST_ENVIRONMENT = new Environment(NOTIFICATION_URL, SUCCESS_URL, CANCEL_URL, true);
@@ -281,6 +281,9 @@ public class TestUtils {
     public static Buyer createDefaultBuyer() {
         return createDefaultBuyer(TestCountry.BE);
     }
+    public static Buyer aBuyer() {
+        return Buyer.BuyerBuilder.aBuyer().withBirthday(new Date()).build();
+    }
 
     public static Buyer createDefaultBuyer(TestCountry testCountry) {
         return createCompleteBuyer(createDefaultPhoneNumbers(testCountry), createDefaultAddresses(testCountry), createFullName());
@@ -473,7 +476,7 @@ public class TestUtils {
                 .build();
     }
 
-    public static Order.OrderItem createOrderItem(String reference, Amount amount) {
+    public static Order.OrderItem.OrderItemBuilder createOrderItemBuilder(String reference, Amount amount) {
         return Order.OrderItem.OrderItemBuilder.anOrderItem()
                 .withAmount(amount)
                 .withQuantity(4L)
@@ -481,11 +484,14 @@ public class TestUtils {
                 .withComment("some label")
                 .withBrand("someBrand")
                 .withReference(reference)
-                .withTaxRatePercentage(BigDecimal.TEN)
-                .build();
+                .withTaxRatePercentage(BigDecimal.TEN);
     }
 
-    public static OrderOTA createOrderOTA(){
+    public static Order.OrderItem createOrderItem(String reference, Amount amount) {
+        return createOrderItemBuilder(reference, amount).build();
+    }
+
+        public static OrderOTA createOrderOTA(){
         return OrderOTA.OrderOTABuilder.anOrderOTA()
                 .withAccomodation( createAccommodation() )
                 .withAgencyCode( "AB28" )

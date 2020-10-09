@@ -36,7 +36,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-import static com.payline.payment.oney.bean.common.PurchaseStatus.StatusCode.*;
+import static com.payline.payment.oney.bean.common.PurchaseStatus.StatusCode.FUNDED;
+import static com.payline.payment.oney.bean.common.PurchaseStatus.StatusCode.TO_BE_FUNDED;
 import static com.payline.payment.oney.bean.response.TransactionStatusResponse.createTransactionStatusResponseFromJson;
 import static com.payline.payment.oney.utils.OneyConstants.HTTP_OK;
 
@@ -62,11 +63,10 @@ public class NotificationServiceImpl implements NotificationService {
          */
         final String transactionId = request.getTransactionId();
         NotificationResponseHandler notificationResponseHandler;
-        if( transactionId == null ){
+        if (transactionId == null) {
             // transaction does not exist yet in Payline -> PaymentResponseByNotificationResponse will be returned.
             notificationResponseHandler = new PaymentResponseByNotificationResponseHandler();
-        }
-        else {
+        } else {
             // transaction exists in Payline -> TransactionStateChangedResponse will be returned.
             notificationResponseHandler = new TransactionStateChangedResponseHandler();
         }
@@ -86,16 +86,16 @@ public class NotificationServiceImpl implements NotificationService {
             OneyNotificationResponse oneyResponse = OneyNotificationResponse.createTransactionStatusResponseFromJson(bodyResponse, key);
 
             // validate the transactionId to the notification's PspContext
-            if( transactionId != null && !transactionId.equals(oneyResponse.getPspContext()) ){
+            if (transactionId != null && !transactionId.equals(oneyResponse.getPspContext())) {
                 LOGGER.info("Given transactionId doesn't match psp_context");
                 throw new InvalidDataException("Given transactionId doesn't match psp_context");
             }
 
             // check the integrity of the notification content
-            if( oneyResponse.getPurchase() == null
+            if (oneyResponse.getPurchase() == null
                     || oneyResponse.getPurchase().getStatusCode() == null
                     || oneyResponse.getPurchase().getExternalReference() == null
-                    || oneyResponse.getMerchantContext() == null ){
+                    || oneyResponse.getMerchantContext() == null) {
                 throw new InvalidDataException("The notification content is missing required data");
             }
 
@@ -106,11 +106,11 @@ public class NotificationServiceImpl implements NotificationService {
             Boolean isCaptureNow = PluginUtils.isCaptureNow(oneyResponse.getMerchantContext());
 
             // analyze the payment status
-            switch( paymentStatus ){
+            switch (paymentStatus) {
                 case FUNDED:
                 case TO_BE_FUNDED:
                 case CANCELLED:
-                    notificationResponse = notificationResponseHandler.successResponse( oneyResponse, transactionId );
+                    notificationResponse = notificationResponseHandler.successResponse(oneyResponse, transactionId);
                     break;
 
                 case FAVORABLE:
@@ -118,28 +118,27 @@ public class NotificationServiceImpl implements NotificationService {
                         // if captureNow => do the confirmation call
                         PurchaseStatus.StatusCode status = confirmAndCheck(request, oneyResponse);
                         if (FUNDED.equals(status) || TO_BE_FUNDED.equals(status)) {
-                            notificationResponse = notificationResponseHandler.successResponse( oneyResponse, transactionId );
-                        }
-                        else {
-                            notificationResponse = notificationResponseHandler.failureResponse( oneyResponse, transactionId,
+                            notificationResponse = notificationResponseHandler.successResponse(oneyResponse, transactionId);
+                        } else {
+                            notificationResponse = notificationResponseHandler.failureResponse(oneyResponse, transactionId,
                                     FailureCause.REFUSED, "payment not funded after confirmation");
                         }
                     } else {
                         // do NOT to capture now
-                        notificationResponse = notificationResponseHandler.successResponse( oneyResponse, transactionId );
+                        notificationResponse = notificationResponseHandler.successResponse(oneyResponse, transactionId);
                     }
 
                     break;
                 case REFUSED:
-                    notificationResponse = notificationResponseHandler.failureResponse( oneyResponse, transactionId,
-                            FailureCause.REFUSED, oneyResponse.getPurchase().getStatusLabel() );
+                    notificationResponse = notificationResponseHandler.failureResponse(oneyResponse, transactionId,
+                            FailureCause.REFUSED, oneyResponse.getPurchase().getStatusLabel());
                     break;
                 case ABORTED:
-                    notificationResponse = notificationResponseHandler.failureResponse( oneyResponse, transactionId,
-                            FailureCause.CANCEL, oneyResponse.getPurchase().getStatusLabel() );
+                    notificationResponse = notificationResponseHandler.failureResponse(oneyResponse, transactionId,
+                            FailureCause.CANCEL, oneyResponse.getPurchase().getStatusLabel());
                     break;
                 case PENDING:
-                    notificationResponse = notificationResponseHandler.onHoldResponse( oneyResponse, transactionId );
+                    notificationResponse = notificationResponseHandler.onHoldResponse(oneyResponse, transactionId);
                     break;
                 default:
                     // Ignore the notification, with a 204 HTTP status code
@@ -148,11 +147,9 @@ public class NotificationServiceImpl implements NotificationService {
                             .withHttpStatus(204)
                             .build();
             }
-        }
-        catch (PluginTechnicalException e) {
+        } catch (PluginTechnicalException e) {
             notificationResponse = notificationResponseHandler.handlePluginTechnicalException(e, transactionId, partnerTransactionId);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             LOGGER.error("Unexpected plugin error", e);
             notificationResponse = notificationResponseHandler.handleRuntimeException(e, transactionId, partnerTransactionId);
         }
@@ -164,7 +161,7 @@ public class NotificationServiceImpl implements NotificationService {
      * Send the confirmation call to the partner API.
      * The, send another request to retrieve the final status of the payment. This final status is then returned.
      *
-     * @param request the notification request received from Payline core
+     * @param request      the notification request received from Payline core
      * @param oneyResponse the parsed content of the notification
      * @return the final status of the payment, after confirmation.
      * @throws PluginTechnicalException
@@ -184,7 +181,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
         PurchaseStatus.StatusCode finalStatus = null;
         int attempts = 0;
-        while( finalStatus == null ) {
+        while (finalStatus == null) {
             StringResponse checkStatusResponse = httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, request.getEnvironment().isSandbox());
             attempts++;
 
@@ -211,16 +208,14 @@ public class NotificationServiceImpl implements NotificationService {
 
             // Retry every 3s until the payment status equals FUNDED or TO_BE_FUNDED (3 times max)
             PurchaseStatus.StatusCode currentStatus = statusResponseResponse.getStatusPurchase().getStatusCode();
-            if( attempts == 3 || FUNDED.equals( currentStatus ) || TO_BE_FUNDED.equals( currentStatus ) ){
+            if (attempts == 3 || FUNDED.equals(currentStatus) || TO_BE_FUNDED.equals(currentStatus)) {
                 finalStatus = currentStatus;
-            }
-            else {
+            } else {
                 // if it was not the third attempt, wait for 3s before the next one
                 try {
                     Thread.sleep(3000);
-                }
-                catch (InterruptedException e) {
-                    LOGGER.error("The thread has been interrupted. Shutting down the thread cleanly..." );
+                } catch (InterruptedException e) {
+                    LOGGER.error("The thread has been interrupted. Shutting down the thread cleanly...");
                     Thread.currentThread().interrupt();
                 }
             }
@@ -238,13 +233,16 @@ public class NotificationServiceImpl implements NotificationService {
      * Define the methods of the classes which will build the instances of {@link NotificationResponse} to return.
      */
     private interface NotificationResponseHandler {
-        NotificationResponse successResponse( OneyNotificationResponse notificationContent, String transactionId );
-        NotificationResponse failureResponse( OneyNotificationResponse notificationContent, String transactionId,
-                                              FailureCause failureCause, String errorCode );
-        NotificationResponse onHoldResponse( OneyNotificationResponse notificationContent, String transactionId );
+        NotificationResponse successResponse(OneyNotificationResponse notificationContent, String transactionId);
 
-        NotificationResponse handlePluginTechnicalException( PluginTechnicalException e, String transactionId, String partnerTransactionId );
-        NotificationResponse handleRuntimeException( RuntimeException e, String transactionId, String partnerTransactionId );
+        NotificationResponse failureResponse(OneyNotificationResponse notificationContent, String transactionId,
+                                             FailureCause failureCause, String errorCode);
+
+        NotificationResponse onHoldResponse(OneyNotificationResponse notificationContent, String transactionId);
+
+        NotificationResponse handlePluginTechnicalException(PluginTechnicalException e, String transactionId, String partnerTransactionId);
+
+        NotificationResponse handleRuntimeException(RuntimeException e, String transactionId, String partnerTransactionId);
     }
 
     /**
@@ -253,7 +251,7 @@ public class NotificationServiceImpl implements NotificationService {
     private static class PaymentResponseByNotificationResponseHandler implements NotificationResponseHandler {
 
         @Override
-        public NotificationResponse successResponse( OneyNotificationResponse notificationContent, String transactionId ){
+        public NotificationResponse successResponse(OneyNotificationResponse notificationContent, String transactionId) {
             String partnerTransactionId = notificationContent.getPurchase().getExternalReference();
             PaymentResponse paymentResponse = PaymentResponseSuccess.PaymentResponseSuccessBuilder.aPaymentResponseSuccess()
                     .withStatusCode(Integer.toString(HTTP_OK))
@@ -262,56 +260,56 @@ public class NotificationServiceImpl implements NotificationService {
                     .withMessage(new Message(Message.MessageType.SUCCESS, notificationContent.getPurchase().getStatusLabel()))
                     .build();
 
-            return this.buildResponse( paymentResponse, partnerTransactionId );
+            return this.buildResponse(paymentResponse, partnerTransactionId);
         }
 
         @Override
-        public NotificationResponse failureResponse( OneyNotificationResponse notificationContent, String transactionId,
-                                                     FailureCause failureCause, String errorCode ) {
+        public NotificationResponse failureResponse(OneyNotificationResponse notificationContent, String transactionId,
+                                                    FailureCause failureCause, String errorCode) {
             String partnerTransactionId = notificationContent.getPurchase().getExternalReference();
-            PaymentResponse paymentResponse = OneyErrorHandler.getPaymentResponseFailure( failureCause,
+            PaymentResponse paymentResponse = OneyErrorHandler.getPaymentResponseFailure(failureCause,
                     partnerTransactionId, PluginUtils.truncate(notificationContent.getPurchase().getStatusLabel(), 50));
 
-            return this.buildResponse( paymentResponse, partnerTransactionId );
+            return this.buildResponse(paymentResponse, partnerTransactionId);
         }
 
         @Override
-        public NotificationResponse onHoldResponse( OneyNotificationResponse notificationContent, String transactionId ) {
+        public NotificationResponse onHoldResponse(OneyNotificationResponse notificationContent, String transactionId) {
             String partnerTransactionId = notificationContent.getPurchase().getExternalReference();
             PaymentResponse paymentResponse = PaymentResponseOnHold.PaymentResponseOnHoldBuilder.aPaymentResponseOnHold()
                     .withPartnerTransactionId(partnerTransactionId)
                     .withOnHoldCause(OnHoldCause.SCORING_ASYNC)
                     .build();
 
-            return this.buildResponse( paymentResponse, partnerTransactionId );
+            return this.buildResponse(paymentResponse, partnerTransactionId);
         }
 
         @Override
-        public NotificationResponse handlePluginTechnicalException( PluginTechnicalException e, String transactionId,
-                                                                    String partnerTransactionId ){
-            return this.buildResponse( e.toPaymentResponseFailure(), partnerTransactionId );
+        public NotificationResponse handlePluginTechnicalException(PluginTechnicalException e, String transactionId,
+                                                                   String partnerTransactionId) {
+            return this.buildResponse(e.toPaymentResponseFailure(), partnerTransactionId);
         }
 
         @Override
-        public NotificationResponse handleRuntimeException( RuntimeException e, String transactionId,
-                                                            String partnerTransactionId ) {
+        public NotificationResponse handleRuntimeException(RuntimeException e, String transactionId,
+                                                           String partnerTransactionId) {
             PaymentResponse paymentResponse = PaymentResponseFailure.PaymentResponseFailureBuilder
                     .aPaymentResponseFailure()
                     .withErrorCode(PluginTechnicalException.runtimeErrorCode(e))
                     .withFailureCause(FailureCause.INTERNAL_ERROR)
                     .build();
 
-            return this.buildResponse( paymentResponse, partnerTransactionId );
+            return this.buildResponse(paymentResponse, partnerTransactionId);
         }
 
-        private PaymentResponseByNotificationResponse buildResponse(PaymentResponse paymentResponse, String partnerTransactionId ){
+        private PaymentResponseByNotificationResponse buildResponse(PaymentResponse paymentResponse, String partnerTransactionId) {
             return PaymentResponseByNotificationResponse.PaymentResponseByNotificationResponseBuilder.aPaymentResponseByNotificationResponseBuilder()
-                    .withPaymentResponse( paymentResponse )
+                    .withPaymentResponse(paymentResponse)
                     .withTransactionCorrelationId(
                             TransactionCorrelationId.TransactionCorrelationIdBuilder
                                     .aCorrelationIdBuilder()
-                                    .withType( TransactionCorrelationId.CorrelationIdType.PARTNER_TRANSACTION_ID )
-                                    .withValue( partnerTransactionId )
+                                    .withType(TransactionCorrelationId.CorrelationIdType.PARTNER_TRANSACTION_ID)
+                                    .withValue(partnerTransactionId)
                                     .build()
                     )
                     .withHttpStatus(204)
@@ -325,59 +323,59 @@ public class NotificationServiceImpl implements NotificationService {
     private static class TransactionStateChangedResponseHandler implements NotificationResponseHandler {
 
         @Override
-        public NotificationResponse successResponse( OneyNotificationResponse notificationContent, String transactionId ) {
-            return this.buildResponse( notificationContent, new SuccessTransactionStatus(), transactionId );
+        public NotificationResponse successResponse(OneyNotificationResponse notificationContent, String transactionId) {
+            return this.buildResponse(notificationContent, SuccessTransactionStatus.builder().build(), transactionId);
         }
 
         @Override
-        public NotificationResponse failureResponse( OneyNotificationResponse notificationContent, String transactionId,
-                                                     FailureCause failureCause, String errorCode ){
-            return this.buildResponse( notificationContent, new FailureTransactionStatus(failureCause), transactionId );
+        public NotificationResponse failureResponse(OneyNotificationResponse notificationContent, String transactionId,
+                                                    FailureCause failureCause, String errorCode) {
+            return this.buildResponse(notificationContent, FailureTransactionStatus.builder().failureCause(failureCause).build(), transactionId);
 
         }
 
         @Override
-        public NotificationResponse onHoldResponse( OneyNotificationResponse notificationContent, String transactionId ){
-            return this.buildResponse( notificationContent, new OnHoldTransactionStatus(OnHoldCause.SCORING_ASYNC), transactionId );
+        public NotificationResponse onHoldResponse(OneyNotificationResponse notificationContent, String transactionId) {
+            return this.buildResponse(notificationContent, OnHoldTransactionStatus.builder().onHoldCause(OnHoldCause.SCORING_ASYNC).build(), transactionId);
         }
 
         @Override
-        public NotificationResponse handlePluginTechnicalException( PluginTechnicalException e, String transactionId,
-                                                                    String partnerTransactionId ){
+        public NotificationResponse handlePluginTechnicalException(PluginTechnicalException e, String transactionId,
+                                                                   String partnerTransactionId) {
             return TransactionStateChangedResponse.TransactionStateChangedResponseBuilder.aTransactionStateChangedResponse()
                     .withPartnerTransactionId(partnerTransactionId)
                     .withTransactionId(transactionId)
-                    .withTransactionStatus(new FailureTransactionStatus(e.getFailureCause()))
+                    .withTransactionStatus(FailureTransactionStatus.builder().failureCause(e.getFailureCause()).build())
                     .withStatusDate(new Date())
                     .withHttpStatus(204)
                     .build();
         }
 
         @Override
-        public NotificationResponse handleRuntimeException( RuntimeException e, String transactionId,
-                                                           String partnerTransactionId ) {
+        public NotificationResponse handleRuntimeException(RuntimeException e, String transactionId,
+                                                           String partnerTransactionId) {
             return TransactionStateChangedResponse.TransactionStateChangedResponseBuilder.aTransactionStateChangedResponse()
                     .withPartnerTransactionId(partnerTransactionId)
                     .withTransactionId(transactionId)
-                    .withTransactionStatus(new FailureTransactionStatus(FailureCause.INTERNAL_ERROR))
+                    .withTransactionStatus(FailureTransactionStatus.builder().failureCause(FailureCause.INTERNAL_ERROR).build())
                     .withStatusDate(new Date())
                     .withHttpStatus(204)
                     .build();
         }
 
-        private TransactionStateChangedResponse buildResponse( OneyNotificationResponse notificationContent, TransactionStatus status,
-                                                               String transactionId ){
+        private TransactionStateChangedResponse buildResponse(OneyNotificationResponse notificationContent, TransactionStatus status,
+                                                              String transactionId) {
             String statusDetails = notificationContent.getPurchase().getReasonCode() + "-" + notificationContent.getPurchase().getReasonLabel();
             boolean isCaptureNow = PluginUtils.isCaptureNow(notificationContent.getMerchantContext());
             return TransactionStateChangedResponse.TransactionStateChangedResponseBuilder
                     .aTransactionStateChangedResponse()
-                    .withPartnerTransactionId( notificationContent.getPurchase().getExternalReference() )
+                    .withPartnerTransactionId(notificationContent.getPurchase().getExternalReference())
                     .withTransactionId(transactionId)
-                    .withTransactionStatus( status )
+                    .withTransactionStatus(status)
                     .withStatusDate(new Date())
                     .withHttpStatus(204)
                     .withAction(isCaptureNow ? TransactionStateChangedResponse.Action.AUTHOR_AND_CAPTURE : TransactionStateChangedResponse.Action.AUTHOR)
-                    .withStatusDetails( statusDetails )
+                    .withStatusDetails(statusDetails)
                     .build();
         }
     }

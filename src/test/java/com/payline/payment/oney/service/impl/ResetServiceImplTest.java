@@ -1,7 +1,5 @@
 package com.payline.payment.oney.service.impl;
 
-import com.payline.payment.oney.utils.OneyConstants;
-import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.http.OneyHttpClient;
 import com.payline.payment.oney.utils.http.StringResponse;
 import com.payline.pmapi.bean.common.FailureCause;
@@ -21,19 +19,19 @@ import static com.payline.payment.oney.bean.common.PurchaseStatus.StatusCode.CAN
 import static com.payline.payment.oney.utils.TestUtils.createDefaultResetRequest;
 import static com.payline.payment.oney.utils.TestUtils.createStringResponse;
 
-public class ResetServiceImplTest {
+class ResetServiceImplTest {
     private String responseOK = "{\"purchase\":{\"status_code\":\"CANCELLED\",\"status_label\":\"Transaction is completed\"}}";
     private String responseOkCiphered = "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ulzsMg0QfZ1N009CwI1PLZzBnbfv6/Enufe5TriN1gKQkEmbMYU0PMtHdk+eF7boW/lsIc5PmjpFX1E/4MUJGkzI=\"}";
     private String responseKOCiphered = "{\"encrypted_message\":\"ymDHJ7HBRe49whKjH1HDtA==\"}";
 
     @InjectMocks
-    public ResetServiceImpl service;
+    ResetServiceImpl service;
 
     @Spy
     OneyHttpClient httpClient;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         service = new ResetServiceImpl();
         MockitoAnnotations.initMocks(this);
     }

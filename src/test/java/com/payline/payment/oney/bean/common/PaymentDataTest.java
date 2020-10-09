@@ -20,7 +20,7 @@ import static com.payline.payment.oney.utils.BeanUtils.createDefaultBusinessTran
 import static com.payline.payment.oney.utils.TestUtils.CONFIRM_AMOUNT;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class PaymentDataTest {
+class PaymentDataTest {
 
     private PaymentData paymentdata;
 
@@ -30,13 +30,13 @@ public class PaymentDataTest {
 
 
     @BeforeAll
-    public void setUp() {
+    void setUp() {
         beanAssembleService = BeanAssemblerServiceImpl.getInstance();
         paymentRequest = TestUtils.createDefaultPaymentRequest();
     }
 
     @Test
-    public void paymentDataOK() throws Exception {
+    void paymentDataOK() throws Exception {
         paymentdata = PaymentData.Builder.aPaymentData()
                 .withCurrency("EUR")
                 .withAmount(100)
@@ -48,7 +48,7 @@ public class PaymentDataTest {
     }
 
     @Test
-    public void paymentDataFromPayline() throws Exception {
+    void paymentDataFromPayline() throws Exception {
         final BusinessTransactionData businessTransaction = beanAssembleService.assembleBuisnessTransactionData(paymentRequest);
         paymentdata = beanAssembleService.assemblePaymentData(paymentRequest, businessTransaction);
 //        paymentdata = PaymentData.Builder.aPaymentData()
@@ -62,7 +62,7 @@ public class PaymentDataTest {
     }
 
     @Test
-    public void toStringTest() throws Exception {
+    void toStringTest() throws Exception {
         paymentdata = PaymentData.Builder.aPaymentData()
                 .withAmount(100)
                 .withCurrency("EUR")

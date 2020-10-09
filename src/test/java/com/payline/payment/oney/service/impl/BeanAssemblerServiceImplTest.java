@@ -5,6 +5,7 @@ import com.payline.payment.oney.bean.common.customer.PurchaseHistory;
 import com.payline.payment.oney.bean.common.purchase.Item;
 import com.payline.payment.oney.bean.common.purchase.Purchase;
 import com.payline.payment.oney.bean.common.purchase.Travel;
+import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.service.BeanAssembleService;
 import com.payline.payment.oney.utils.TestUtils;
 import com.payline.pmapi.bean.common.Amount;
@@ -16,9 +17,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Currency;
 import java.util.Date;
+import java.util.List;
 
+import static com.payline.payment.oney.utils.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BeanAssemblerServiceImplTest {
@@ -26,7 +30,7 @@ class BeanAssemblerServiceImplTest {
     private BeanAssembleService beanAssembleService = BeanAssemblerServiceImpl.getInstance();
 
     @Test
-    void assembleCustomer() {
+    void assembleCustomer() throws InvalidDataException {
         // given: a payment request
         PaymentRequest paymentRequest = TestUtils.createDefaultPaymentRequest();
 
@@ -56,7 +60,7 @@ class BeanAssemblerServiceImplTest {
     }
 
     @Test
-    void assemblePurchaseHistoryFull() {
+    void assemblePurchaseHistoryFull() throws InvalidDataException {
         BuyerExtendedHistory buyerExtendedHistory = BuyerExtendedHistory.BuyerExtendedHistoryBuilder.aBuyerExtendedHistory()
                 .withFirstOrderDate(new Date())
                 .withLastOrderDate(new Date())
@@ -83,7 +87,7 @@ class BeanAssemblerServiceImplTest {
     }
 
     @Test
-    void assemblePurchaseHistoryNoExtended() {
+    void assemblePurchaseHistoryNoExtended() throws InvalidDataException {
         // create paymentRequest
         PaymentRequest request = TestUtils.createCompletePaymentRequestBuilder()
                 .withBuyer(
@@ -103,7 +107,7 @@ class BeanAssemblerServiceImplTest {
     }
 
     @Test
-    void assemblePurchaseWithDeliveryFees() {
+    void assemblePurchaseWithDeliveryFees() throws InvalidDataException {
         // create request with order.deliveryCharge not empty
         Currency currency = Currency.getInstance("EUR");
         Order order = TestUtils.createCompleteOrderBuilder("123456789")
@@ -126,7 +130,36 @@ class BeanAssemblerServiceImplTest {
         Assertions.assertEquals(Float.valueOf("0.1"), item.getPrice());
         Assertions.assertEquals(1, item.getQuantity().intValue());
         Assertions.assertEquals("TRANSPORT", item.getItemExternalcode());
+    }
 
+
+    @Test
+    void assemblePurchase() throws InvalidDataException {
+        List<Order.OrderItem> items = new ArrayList<>();
+        items.add(createOrderItemBuilder("reference", createAmount(CURRENCY_EUR)).withQuantity(1L).build());
+        items.add(createOrderItemBuilder("reference", createAmount(CURRENCY_EUR)).withQuantity(2L).build());
+
+        Order order = TestUtils.createCompleteOrderBuilder("123456789")
+                .withDeliveryCharge(new Amount(BigInteger.TEN, Currency.getInstance("EUR")))
+                .withItems(items)
+                .build();
+
+        // create paymentRequest
+        PaymentRequest request = TestUtils.createCompletePaymentRequestBuilder()
+                .withBuyer(
+                        TestUtils.createCompleteBuyerBuilder()
+                                .withBuyerExtendedHistory(null)
+                                .build()
+                )
+                .withOrder(order)
+                .build();
+
+        // test method
+        Purchase purchase = beanAssembleService.assemblePurchase(request);
+        Assertions.assertNotNull(purchase);
+        Assertions.assertNotNull(purchase.getListItem());
+        Assertions.assertFalse(purchase.getListItem().isEmpty());
+        Assertions.assertEquals(3, purchase.getNumberOfItems());
 
     }
 

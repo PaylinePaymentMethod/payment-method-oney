@@ -23,12 +23,12 @@ import static com.payline.payment.oney.utils.TestUtils.*;
 import static org.mockito.ArgumentMatchers.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class PaymentWithRedirectionServiceTest extends OneyConfigBean {
+class PaymentWithRedirectionServiceTest extends OneyConfigBean {
     private String partnerTransactionId = "123456789A";
 
     @InjectMocks
     @Spy
-    public PaymentWithRedirectionServiceImpl service;
+    PaymentWithRedirectionServiceImpl service;
 
     @Mock
     OneyHttpClient httpClient;

@@ -44,6 +44,15 @@ publishing {
         }
     }
 }
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+
+plugins.withType(JacocoPlugin) {
+    tasks["test"].finalizedBy 'jacocoTestReport'
+}
 
 sonarqube {
     properties {

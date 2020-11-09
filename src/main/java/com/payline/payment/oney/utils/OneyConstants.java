@@ -18,9 +18,7 @@ public class OneyConstants {
     public static final String SECRET_VALUE_ON = "Method-body";
     public static final String SECRET_VALUE_OFF = "None";
 
-    public static final String CONFIG_HTTP_CONNECT_TIMEOUT = "http.connectTimeout";
-    public static final String CONFIG_HTTP_WRITE_TIMEOUT = "http.writeTimeout";
-    public static final String CONFIG_HTTP_READ_TIMEOUT = "http.readTimeout";
+
 
 
     //Constant specific of this payment method

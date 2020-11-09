@@ -1,31 +1,40 @@
 package com.payline.payment.oney.service.impl;
 
+import com.payline.payment.oney.utils.http.OneyHttpClient;
+import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.bean.configuration.ReleaseInformation;
 import com.payline.pmapi.bean.configuration.parameter.AbstractParameter;
 import com.payline.pmapi.bean.configuration.parameter.impl.InputParameter;
+import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static com.payline.payment.oney.utils.OneyConstants.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ConfigurationServiceImplTest {
 
     @InjectMocks
+    @Spy
     private ConfigurationServiceImpl service;
 
-    @BeforeAll
-    public void setUp() throws Exception {
-        service = new ConfigurationServiceImpl();
+    @BeforeEach
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 

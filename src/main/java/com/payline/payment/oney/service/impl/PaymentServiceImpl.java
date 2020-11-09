@@ -37,14 +37,8 @@ import static com.payline.payment.oney.utils.OneyErrorHandler.handleOneyFailureR
 
 public class PaymentServiceImpl implements PaymentService {
 
-    private OneyHttpClient httpClient;
     private BeanAssembleService beanAssembleService = BeanAssemblerServiceImpl.getInstance();
     private static final Logger LOGGER = LogManager.getLogger(PaymentServiceImpl.class);
-
-
-    public PaymentServiceImpl() {
-        this.httpClient = OneyHttpClient.getInstance();
-    }
 
     @Override
     public PaymentResponse paymentRequest(PaymentRequest paymentRequest) {
@@ -81,6 +75,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .withMerchantContext(merchantContext)// adding data to merchantContext field to get it later on the notification
                     .build();
 
+            final OneyHttpClient httpClient = getNewHttpClientInstance(paymentRequest);
             final StringResponse oneyResponse = httpClient.initiatePayment(oneyRequest, paymentRequest.getEnvironment().isSandbox());
 
             if (oneyResponse == null) {
@@ -142,6 +137,10 @@ public class PaymentServiceImpl implements PaymentService {
                     .build();
         }
 
+    }
+
+    protected OneyHttpClient getNewHttpClientInstance(final PaymentRequest paymentRequest) {
+        return OneyHttpClient.getInstance(paymentRequest.getPartnerConfiguration());
     }
 
 }

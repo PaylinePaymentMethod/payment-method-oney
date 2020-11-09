@@ -42,11 +42,6 @@ import static com.payline.payment.oney.utils.OneyConstants.HTTP_OK;
 
 public class NotificationServiceImpl implements NotificationService {
     private static final Logger LOGGER = LogManager.getLogger(NotificationServiceImpl.class);
-    private OneyHttpClient httpClient;
-
-    public NotificationServiceImpl() {
-        httpClient = OneyHttpClient.getInstance();
-    }
 
     @Override
     public NotificationResponse parse(NotificationRequest request) {
@@ -174,6 +169,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         // confirmation
         OneyConfirmRequest confirmRequest = new OneyConfirmRequest.Builder(request, oneyResponse).build();
+        final OneyHttpClient httpClient = getNewHttpClientInstance(request);
         httpClient.initiateConfirmationPayment(confirmRequest, request.getEnvironment().isSandbox());
 
 
@@ -229,9 +225,14 @@ public class NotificationServiceImpl implements NotificationService {
         return finalStatus;
     }
 
+
     @Override
     public void notifyTransactionStatus(NotifyTransactionStatusRequest notifyTransactionStatusRequest) {
         //ras.
+    }
+
+    protected OneyHttpClient getNewHttpClientInstance(final NotificationRequest request) {
+        return OneyHttpClient.getInstance(request.getPartnerConfiguration());
     }
 
     /**

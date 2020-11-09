@@ -23,7 +23,7 @@ if (file(externalFileName).exists()) {
 
 description = 'payment-method-oney'
 group = 'com.payline.payment.oney'
-version = '1.5.1'
+version = '1.6-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -130,6 +130,11 @@ task printVersion {
     doLast {
         println version
     }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.incremental = true  // Pour accélerer la compilation
 }
 
 /* Replace tokens in resources files after compilation */

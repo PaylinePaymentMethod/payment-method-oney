@@ -36,8 +36,6 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
     private I18nService i18n = I18nService.getInstance();
 
-    private OneyHttpClient httpClient = OneyHttpClient.getInstance();
-
     @Override
     public List<AbstractParameter> getParameters(Locale locale) {
         List<AbstractParameter> parameters = new ArrayList<>();
@@ -213,6 +211,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
             String jsonMsg = getFinalJsonMessage(pspId, merchantGuid, opcKey, codePays);
             Map<String, String> parameters = PluginUtils.getParametersMap(contractParametersCheckRequest);
             StringResponse stringResponse;
+            final OneyHttpClient httpClient = getNewHttpClientInstance(contractParametersCheckRequest);
             if (Boolean.valueOf(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
                 OneyEncryptedRequest requestEncrypted = OneyEncryptedRequest.fromJson(jsonMsg, contractParametersCheckRequest);
                 stringResponse = httpClient.initiateCheckPayment(requestEncrypted.toString(), parameters, isSandbox);
@@ -319,5 +318,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     public String getName(Locale locale) {
 
         return this.i18n.getMessage(ConfigurationConstants.PAYMENT_METHOD_NAME, locale);
+    }
+
+    protected OneyHttpClient getNewHttpClientInstance(final ContractParametersCheckRequest contractParametersCheckRequest) {
+        return OneyHttpClient.getInstance(contractParametersCheckRequest.getPartnerConfiguration());
     }
 }

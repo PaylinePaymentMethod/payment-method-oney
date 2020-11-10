@@ -21,11 +21,6 @@ import static com.payline.payment.oney.utils.OneyConstants.HTTP_OK;
 
 public class CaptureServiceImpl implements CaptureService {
     private static final String ERROR_STATUS = "TRANSACTION STATUS NOT FAVORABLE:";
-    private OneyHttpClient httpClient;
-
-    public CaptureServiceImpl() {
-        httpClient = OneyHttpClient.getInstance();
-    }
 
     @Override
     public CaptureResponse captureRequest(CaptureRequest captureRequest) {
@@ -36,7 +31,8 @@ public class CaptureServiceImpl implements CaptureService {
             // call the get status request
             OneyTransactionStatusRequest oneyTransactionStatusRequest = OneyTransactionStatusRequest.Builder.aOneyGetStatusRequest()
                     .fromCaptureRequest(captureRequest).build();
-            StringResponse oneyResponse = this.httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, isSandbox);
+            final OneyHttpClient httpClient = getNewHttpClientInstance(captureRequest);
+            StringResponse oneyResponse = httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, isSandbox);
 
             // check the result
             if (oneyResponse == null || oneyResponse.getContent() == null || oneyResponse.getCode() != HTTP_OK) {
@@ -85,6 +81,10 @@ public class CaptureServiceImpl implements CaptureService {
         } catch (PluginTechnicalException e) {
             return createFailure(transactionId, e.getTruncatedErrorCodeOrLabel(), e.getFailureCause());
         }
+    }
+
+    protected OneyHttpClient getNewHttpClientInstance(final CaptureRequest captureRequest) {
+        return OneyHttpClient.getInstance(captureRequest.getPartnerConfiguration());
     }
 
     @Override

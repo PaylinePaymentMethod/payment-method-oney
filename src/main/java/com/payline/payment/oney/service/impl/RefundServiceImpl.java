@@ -26,12 +26,7 @@ import static com.payline.payment.oney.utils.OneyErrorHandler.handleOneyFailureR
 
 public class RefundServiceImpl implements RefundService {
 
-    private OneyHttpClient httpClient;
     private static final Logger LOGGER = LogManager.getLogger(RefundServiceImpl.class);
-
-    public RefundServiceImpl() {
-        this.httpClient = OneyHttpClient.getInstance();
-    }
 
     @Override
     public RefundResponse refundRequest(RefundRequest refundRequest) {
@@ -48,6 +43,7 @@ public class RefundServiceImpl implements RefundService {
                     .fromRefundRequest(refundRequest, refundFlag)
                     .build();
 
+            final OneyHttpClient httpClient = getNewHttpClientInstance(refundRequest);
             StringResponse oneyResponse = httpClient.initiateRefundPayment(oneyRefundRequest, refundRequest.getEnvironment().isSandbox());
             //handle Response
             if (oneyResponse == null) {
@@ -105,6 +101,7 @@ public class RefundServiceImpl implements RefundService {
 
     }
 
+
     @Override
     public boolean canMultiple() {
         return true;
@@ -127,7 +124,8 @@ public class RefundServiceImpl implements RefundService {
                 .build();
         PurchaseStatus.StatusCode transactionStatusCode = null;
         try {
-            StringResponse status = this.httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, refundRequest.getEnvironment().isSandbox());
+            final OneyHttpClient httpClient = getNewHttpClientInstance(refundRequest);
+            StringResponse status = httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, refundRequest.getEnvironment().isSandbox());
             //l'appel est OK on gere selon la response
             if (status.getCode() == HTTP_OK) {
                 TransactionStatusResponse response = TransactionStatusResponse.createTransactionStatusResponseFromJson(status.getContent(), oneyTransactionStatusRequest.getEncryptKey());
@@ -143,4 +141,7 @@ public class RefundServiceImpl implements RefundService {
 
     }
 
+    protected OneyHttpClient getNewHttpClientInstance(final RefundRequest refundRequest) {
+        return OneyHttpClient.getInstance(refundRequest.getPartnerConfiguration());
+    }
 }

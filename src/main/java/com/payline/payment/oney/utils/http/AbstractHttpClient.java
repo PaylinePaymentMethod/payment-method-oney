@@ -1,7 +1,7 @@
 package com.payline.payment.oney.utils.http;
 
 import com.payline.payment.oney.exception.HttpCallException;
-import com.payline.payment.oney.utils.properties.service.ConfigPropertiesEnum;
+import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.logger.LogManager;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -14,6 +14,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -21,6 +22,7 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 import static com.payline.payment.oney.utils.OneyConstants.*;
 
@@ -32,32 +34,75 @@ public abstract class AbstractHttpClient {
 
     private CloseableHttpClient client;
     private static final Logger LOGGER = LogManager.getLogger(AbstractHttpClient.class);
-
+    public static final String KEY_CONNECT_TIMEOUT = "connect.time.out";
+    public static final String CONNECTION_REQUEST_TIMEOUT = "connect.request.time.out";
+    public static final String READ_SOCKET_TIMEOUT = "read.time.out";
+    public static final String KEEP_ALIVE_DURATION = "keep.alive.duration";
+    public static final String POOL_VALIDATE_CONN_AFTER_INACTIVITY = "pool.validate.connection.after.inactivity";
+    public static final String POOL_MAX_SIZE_PER_ROUTE = "pool.max.size.per.route";
+    public static final String EVICT_IDLE_CONNECTION_TIMEOUT = "evict.idle.connection.timeout";
+    public static final String CONNECTION_TIME_TO_LIVE = "connection.time.to.live";
 
     /**
      * Instantiate a HTTP client.
      */
 
-    protected AbstractHttpClient() {
-
-        int connectTimeout = Integer.parseInt(ConfigPropertiesEnum.INSTANCE.get(CONFIG_HTTP_CONNECT_TIMEOUT));
-        int requestTimeout = Integer.parseInt(ConfigPropertiesEnum.INSTANCE.get(CONFIG_HTTP_WRITE_TIMEOUT));
-        int readTimeout = Integer.parseInt(ConfigPropertiesEnum.INSTANCE.get(CONFIG_HTTP_READ_TIMEOUT));
-
+    protected AbstractHttpClient(final PartnerConfiguration partnerConfiguration) {
 
         final RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(connectTimeout * 1000)
-                .setConnectionRequestTimeout(requestTimeout * 1000)
-                .setSocketTimeout(readTimeout * 1000)
-                .build();
+                .setConnectTimeout(Integer.parseInt(partnerConfiguration.getProperty(KEY_CONNECT_TIMEOUT)))
+                .setConnectionRequestTimeout(Integer.parseInt(partnerConfiguration.getProperty(CONNECTION_REQUEST_TIMEOUT)))
+                .setSocketTimeout(Integer.parseInt(partnerConfiguration.getProperty(READ_SOCKET_TIMEOUT))).build();
 
-        this.client = HttpClientBuilder.create()
-                .useSystemProperties()
+
+        final HttpClientBuilder builder = getHttpClientBuilder(partnerConfiguration, requestConfig);
+        this.client = builder.build();
+    }
+
+
+    protected HttpClientBuilder getHttpClientBuilder(final PartnerConfiguration partnerConfiguration, final RequestConfig requestConfig) {
+        final HttpClientBuilder builder = HttpClientBuilder.create();
+        builder.useSystemProperties()
                 .setDefaultRequestConfig(requestConfig)
                 .setDefaultCredentialsProvider(new BasicCredentialsProvider())
-                .setSSLSocketFactory(new SSLConnectionSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory(), SSLConnectionSocketFactory.getDefaultHostnameVerifier())).build();
+                .setSSLSocketFactory(new SSLConnectionSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory(), SSLConnectionSocketFactory.getDefaultHostnameVerifier()));
 
+        final String inactivityConnection = partnerConfiguration.getProperty(POOL_VALIDATE_CONN_AFTER_INACTIVITY);
+        final String maxSizePerRoute = partnerConfiguration.getProperty(POOL_MAX_SIZE_PER_ROUTE);
+
+        boolean hasInactivityConnexion = inactivityConnection != null && inactivityConnection.length() > 0;
+        boolean hasMaxPoolSizePerRoute = maxSizePerRoute != null && maxSizePerRoute.length() > 0;
+
+        // Si des paramètres concernant le pool ont été changé on définit
+        // un nouveau pool de connection.
+        if (hasInactivityConnexion || hasMaxPoolSizePerRoute) {
+            final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+            if (hasInactivityConnexion) {
+                connManager.setValidateAfterInactivity(Integer.parseInt(inactivityConnection));
+            }
+            if (hasMaxPoolSizePerRoute) {
+                connManager.setDefaultMaxPerRoute(Integer.parseInt(maxSizePerRoute));
+            }
+            builder.setConnectionManager(connManager);
+        }
+
+        final String keepAliveStrategy = partnerConfiguration.getProperty(KEEP_ALIVE_DURATION);
+        if (keepAliveStrategy != null && keepAliveStrategy.length() > 0) {
+            builder.setKeepAliveStrategy((response, context) -> Long.parseLong(keepAliveStrategy));
+        }
+
+        final String evictIdleConnection = partnerConfiguration.getProperty(EVICT_IDLE_CONNECTION_TIMEOUT);
+        if (evictIdleConnection != null && evictIdleConnection.length() > 0) {
+            builder.evictIdleConnections(Long.parseLong(evictIdleConnection), TimeUnit.MILLISECONDS);
+        }
+
+        final String connectionTimeToLive = partnerConfiguration.getProperty(CONNECTION_TIME_TO_LIVE);
+        if (connectionTimeToLive != null && connectionTimeToLive.length() > 0){
+            builder.setConnectionTimeToLive(Long.parseLong(connectionTimeToLive), TimeUnit.MILLISECONDS);
+        }
+        return builder;
     }
+
 
     /**
      * Send a POST request.

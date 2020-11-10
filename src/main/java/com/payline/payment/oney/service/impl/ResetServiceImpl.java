@@ -25,12 +25,8 @@ import static com.payline.payment.oney.utils.OneyErrorHandler.handleOneyFailureR
 
 public class ResetServiceImpl implements ResetService {
 
-    private OneyHttpClient httpClient;
     private static final Logger LOGGER = LogManager.getLogger(ResetServiceImpl.class);
 
-    public ResetServiceImpl() {
-        this.httpClient = OneyHttpClient.getInstance();
-    }
 
     @Override
     public ResetResponse resetRequest(ResetRequest resetRequest) {
@@ -46,6 +42,7 @@ public class ResetServiceImpl implements ResetService {
                     .fromResetRequest(resetRequest, refundFlag)
                     .build();
 
+            final OneyHttpClient httpClient = getNewHttpClientInstance(resetRequest);
             StringResponse oneyResponse = httpClient.initiateRefundPayment(oneyRefundRequest, resetRequest.getEnvironment().isSandbox());
             //handle Response
             if (oneyResponse == null) {
@@ -103,6 +100,10 @@ public class ResetServiceImpl implements ResetService {
         }
     }
 
+    protected OneyHttpClient getNewHttpClientInstance(final ResetRequest resetRequest) {
+        return OneyHttpClient.getInstance(resetRequest.getPartnerConfiguration());
+    }
+
     @Override
     public boolean canMultiple() {
         return true;
@@ -125,7 +126,8 @@ public class ResetServiceImpl implements ResetService {
                 .build();
         PurchaseStatus.StatusCode transactionStatusCode = null;
         try {
-            StringResponse status = this.httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, resetRequest.getEnvironment().isSandbox());
+            final OneyHttpClient httpClient = getNewHttpClientInstance(resetRequest);
+            StringResponse status = httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, resetRequest.getEnvironment().isSandbox());
             //l'appel est OK on gere selon la response
             if (status.getCode() == HTTP_OK) {
                 TransactionStatusResponse response = createTransactionStatusResponseFromJson(status.getContent(), oneyTransactionStatusRequest.getEncryptKey());

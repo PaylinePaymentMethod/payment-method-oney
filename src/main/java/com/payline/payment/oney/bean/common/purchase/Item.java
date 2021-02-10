@@ -2,6 +2,7 @@ package com.payline.payment.oney.bean.common.purchase;
 
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyBean;
+import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.utils.ItemComparator;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.payment.Order;
@@ -110,9 +111,9 @@ public class Item extends OneyBean {
      *
      * @param listItems a list of Item
      */
-    public static void defineMainItem(List<Item> listItems) {
+    public static void defineMainItem(List<Item> listItems) throws InvalidDataException {
         if (listItems.isEmpty()) {
-            throw new IllegalArgumentException("This list not contain any item");
+            throw new InvalidDataException("This list not contain any item");
         }
         if (listItems.size() == 1) {
             listItems.get(0).setIsMainItem(1);

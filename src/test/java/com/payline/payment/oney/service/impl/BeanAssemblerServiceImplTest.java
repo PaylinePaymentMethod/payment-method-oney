@@ -5,6 +5,7 @@ import com.payline.payment.oney.bean.common.customer.PurchaseHistory;
 import com.payline.payment.oney.bean.common.purchase.Item;
 import com.payline.payment.oney.bean.common.purchase.Purchase;
 import com.payline.payment.oney.bean.common.purchase.Travel;
+import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.service.BeanAssembleService;
 import com.payline.payment.oney.utils.TestUtils;
 import com.payline.pmapi.bean.common.Amount;
@@ -26,7 +27,7 @@ class BeanAssemblerServiceImplTest {
     private BeanAssembleService beanAssembleService = BeanAssemblerServiceImpl.getInstance();
 
     @Test
-    void assembleCustomer() {
+    void assembleCustomer() throws InvalidDataException {
         // given: a payment request
         PaymentRequest paymentRequest = TestUtils.createDefaultPaymentRequest();
 
@@ -56,7 +57,7 @@ class BeanAssemblerServiceImplTest {
     }
 
     @Test
-    void assemblePurchaseHistoryFull() {
+    void assemblePurchaseHistoryFull() throws InvalidDataException {
         BuyerExtendedHistory buyerExtendedHistory = BuyerExtendedHistory.BuyerExtendedHistoryBuilder.aBuyerExtendedHistory()
                 .withFirstOrderDate(new Date())
                 .withLastOrderDate(new Date())
@@ -83,7 +84,7 @@ class BeanAssemblerServiceImplTest {
     }
 
     @Test
-    void assemblePurchaseHistoryNoExtended() {
+    void assemblePurchaseHistoryNoExtended() throws InvalidDataException {
         // create paymentRequest
         PaymentRequest request = TestUtils.createCompletePaymentRequestBuilder()
                 .withBuyer(
@@ -103,7 +104,7 @@ class BeanAssemblerServiceImplTest {
     }
 
     @Test
-    void assemblePurchaseWithDeliveryFees() {
+    void assemblePurchaseWithDeliveryFees() throws InvalidDataException {
         // create request with order.deliveryCharge not empty
         Currency currency = Currency.getInstance("EUR");
         Order order = TestUtils.createCompleteOrderBuilder("123456789")

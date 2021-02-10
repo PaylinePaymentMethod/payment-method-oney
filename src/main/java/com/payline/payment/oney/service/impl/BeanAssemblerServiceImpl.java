@@ -74,7 +74,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
     }
 
     @Override
-    public Customer assembleCustomer(final PaymentRequest paymentRequest) {
+    public Customer assembleCustomer(final PaymentRequest paymentRequest) throws InvalidDataException {
         Buyer buyer = paymentRequest.getBuyer();
         if (buyer == null) {
             return null;
@@ -84,7 +84,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
                 .withCustomerExternalCode(buyer.getCustomerIdentifier())
                 .withLanguageCode(paymentRequest.getLocale().getLanguage())
                 .withCustomerIdentity( this.assembleCustomerIdentity( buyer ) )
-                .withContactDetails( ContactDetails.Builder.aContactDetailsBuilder()
+                .withContactDetails(ContactDetails.Builder.aContactDetailsBuilder()
                         .fromPayline(buyer)
                         .build()
                 )
@@ -102,7 +102,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
     }
 
     @Override
-    public CustomerIdentity assembleCustomerIdentity(Buyer buyer) {
+    public CustomerIdentity assembleCustomerIdentity(Buyer buyer) throws InvalidDataException {
         if (buyer == null) {
             return null;
         }
@@ -124,17 +124,22 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
             ciBuilder.withBirthDate( PluginUtils.dateToString(buyer.getBirthday()) );
         }
 
+
+
         return ciBuilder.build();
     }
 
     @Override
-    public Delivery assembleDelivery(PaymentRequest paymentRequest){
+    public Delivery assembleDelivery(PaymentRequest paymentRequest) throws InvalidDataException {
         Delivery.Builder deliveryBuilder = Delivery.Builder.aDeliveryBuilder();
 
         Order order = paymentRequest.getOrder();
         Integer deliveryModeCode = null;
         if (order != null) {
-            deliveryBuilder.withDeliveryDate(PluginUtils.dateToString(order.getExpectedDeliveryDate()));
+            if(order.getExpectedDeliveryDate() != null) {
+                deliveryBuilder.withDeliveryDate(PluginUtils.dateToString(order.getExpectedDeliveryDate()));
+            }
+
             if (paymentRequest.getOrder() != null) {
                 deliveryModeCode = PluginUtils.getOneyDeliveryModeCode(order.getDeliveryMode());
                 deliveryBuilder.withDeliveryModeCode( deliveryModeCode );
@@ -263,7 +268,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
     }
 
     @Override
-    public Purchase assemblePurchase(final PaymentRequest paymentRequest) {
+    public Purchase assemblePurchase(final PaymentRequest paymentRequest) throws InvalidDataException {
         Purchase.Builder purchaseBuilder = Purchase.Builder.aPurchaseBuilder();
         purchaseBuilder.withExternalReferenceType(EXTERNAL_REFERENCE_TYPE);
 
@@ -347,7 +352,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
     }
 
     @Override
-    public PurchaseHistory assemblePurchaseHistory(PaymentRequest paymentRequest) {
+    public PurchaseHistory assemblePurchaseHistory(PaymentRequest paymentRequest) throws InvalidDataException {
         // init variables
         PurchaseHistory.Builder purchaseHistoryBuilder = PurchaseHistory.Builder.aPurchaseHistoryBuilder();
 
@@ -360,6 +365,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
             if (buyerExtendedHistory.getLastOrderDate() != null) {
                 purchaseHistoryBuilder.withLastPurchaseDate(PluginUtils.dateToString(buyerExtendedHistory.getLastOrderDate()));
             }
+
             if( buyerExtendedHistory.getTotalAmount() != null && buyerExtendedHistory.getTotalCurrency() != null ){
                 purchaseHistoryBuilder.withTotalAmount(
                         PluginUtils.createFloatAmount(

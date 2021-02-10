@@ -491,7 +491,10 @@ public class PluginUtils {
         return s.split(SEPARATOR)[2];
     }
 
-    public static String dateToString(Date date){
+    public static String dateToString(Date date) throws InvalidDataException {
+        if(date == null){
+            throw new InvalidDataException("Date must not be null");
+        }
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         return  df.format(date);
     }

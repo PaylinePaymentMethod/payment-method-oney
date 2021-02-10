@@ -164,7 +164,8 @@ public class OneyHttpClientTest {
 
         assertNotNull(request);
         StringResponse transactStatus = testedClient.initiateGetTransactionStatus(request, true);
-        assertNotNull(transactStatus.getCode());
+
+        assertEquals(200,transactStatus.getCode());
     }
 
 
@@ -195,7 +196,8 @@ public class OneyHttpClientTest {
 
         assertNotNull(request);
         StringResponse transactStatus = testedClient.initiateRefundPayment(request, true);
-        assertNotNull(transactStatus.getCode());
+
+        assertEquals(200,transactStatus.getCode());
         assertNotNull(transactStatus.getContent());
     }
 

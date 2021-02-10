@@ -11,7 +11,7 @@ public class ContactDetailsTest {
     private ContactDetails contactDetails;
 
     @Test
-    public void fromPayline() throws Exception {
+    public void fromPayline() {
 
         contactDetails = ContactDetails.Builder.aContactDetailsBuilder()
                 .fromPayline(createDefaultBuyer())
@@ -22,7 +22,7 @@ public class ContactDetailsTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         contactDetails = ContactDetails.Builder.aContactDetailsBuilder()
                 .withLandLineNumber("0436656565")
                 .withMobilePhoneNumber("0636656565")

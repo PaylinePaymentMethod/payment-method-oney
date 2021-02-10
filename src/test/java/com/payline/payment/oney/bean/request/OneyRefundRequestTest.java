@@ -10,7 +10,7 @@ import java.util.Currency;
 import static com.payline.payment.oney.utils.TestUtils.CONFIRM_AMOUNT;
 import static com.payline.payment.oney.utils.TestUtils.createDefaultRefundRequest;
 
-public class OneyRefundRequestTest {
+class OneyRefundRequestTest {
 
     @Test
     public void createRefundRequestOK() throws Exception {
@@ -27,12 +27,6 @@ public class OneyRefundRequestTest {
 
         Float paymentAmountConverted = PluginUtils.createFloatAmount(new BigInteger(CONFIRM_AMOUNT), Currency.getInstance("EUR"));
         Assertions.assertEquals(paymentAmountConverted, request.getPurchase().getAmount(), 0.01);
-    }
-
-    @Test
-    public void createRefundRequestKO() {
-        //todo
-
     }
 
 }

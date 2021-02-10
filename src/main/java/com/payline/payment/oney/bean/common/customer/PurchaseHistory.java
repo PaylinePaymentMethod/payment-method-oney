@@ -3,33 +3,32 @@ package com.payline.payment.oney.bean.common.customer;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Pour v2
+ * Purchase history data
  */
-@SuppressWarnings(value = "emptyClass")
 public class PurchaseHistory {
 
     @SerializedName("total_number_of_purchase")
-    private Integer numberOfPurchase;
+    private Integer totalNumberOfPurchase;
 
     @SerializedName("total_amount")
     private Float totalAmount;
 
     @SerializedName("first_purchase_date")
-    private String firstPurchasedate;
+    private String firstPurchaseDate;
 
     @SerializedName("last_purchase_date")
     private String lastPurchaseDate;
 
-    public Integer getNumberOfPurchase() {
-        return numberOfPurchase;
+    public Integer getTotalNumberOfPurchase() {
+        return totalNumberOfPurchase;
     }
 
     public Float getTotalAmount() {
         return totalAmount;
     }
 
-    public String getFirstPurchasedate() {
-        return firstPurchasedate;
+    public String getFirstPurchaseDate() {
+        return firstPurchaseDate;
     }
 
     public String getLastPurchaseDate() {
@@ -37,23 +36,23 @@ public class PurchaseHistory {
     }
 
     private PurchaseHistory(Builder builder) {
-        this.numberOfPurchase = builder.numberOfPurchase;
+        this.totalNumberOfPurchase = builder.totalNumberOfPurchase;
         this.totalAmount = builder.totalAmount;
-        this.firstPurchasedate = builder.firstPurchasedate;
+        this.firstPurchaseDate = builder.firstPurchaseDate;
         this.lastPurchaseDate = builder.lastPurchaseDate;
     }
 
     // Builder
     public static class Builder {
-        private int numberOfPurchase;
-        private float totalAmount;
-        private String firstPurchasedate;
+        private Integer totalNumberOfPurchase;
+        private Float totalAmount;
+        private String firstPurchaseDate;
         private String lastPurchaseDate;
 
         public static PurchaseHistory.Builder aPurchaseHistoryBuilder() { return new Builder();}
 
-        public PurchaseHistory.Builder withNumberOfPurchase(int numberOfPurchase) {
-            this.numberOfPurchase = numberOfPurchase;
+        public PurchaseHistory.Builder withTotalNumberOfPurchase(int totalNumberOfPurchase) {
+            this.totalNumberOfPurchase = totalNumberOfPurchase;
             return this;
         }
 
@@ -62,8 +61,8 @@ public class PurchaseHistory {
             return this;
         }
 
-        public PurchaseHistory.Builder withFirstPurchasedate(String firstPurchasedate) {
-            this.firstPurchasedate = firstPurchasedate;
+        public PurchaseHistory.Builder withFirstPurchaseDate(String firstPurchaseDate) {
+            this.firstPurchaseDate = firstPurchaseDate;
             return this;
         }
 

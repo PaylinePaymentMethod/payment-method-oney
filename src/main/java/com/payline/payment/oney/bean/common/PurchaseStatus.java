@@ -7,7 +7,7 @@ public class PurchaseStatus {
     @SerializedName("status_label")
     private String statusLabel;
     @SerializedName("status_code")
-    private String statusCode;
+    private StatusCode statusCode;
     @SerializedName("reason_code")
     private String reasonCode;
     @SerializedName("reason_label")
@@ -17,7 +17,7 @@ public class PurchaseStatus {
         return statusLabel;
     }
 
-    public String getStatusCode() {
+    public StatusCode getStatusCode() {
         return statusCode;
     }
 
@@ -30,11 +30,16 @@ public class PurchaseStatus {
     }
 
 
-    public PurchaseStatus(String statusLabel, String statusCode, String reasonCode, String reasonLabel) {
+    public PurchaseStatus(String statusLabel, StatusCode statusCode, String reasonCode, String reasonLabel) {
         this.statusLabel = statusLabel;
         this.statusCode = statusCode;
         this.reasonCode = reasonCode;
         this.reasonLabel = reasonLabel;
+    }
+
+
+    public enum StatusCode{
+        PENDING,REFUSED,ABORTED,FAVORABLE,FUNDED,CANCELLED,TO_BE_FUNDED
     }
 
 

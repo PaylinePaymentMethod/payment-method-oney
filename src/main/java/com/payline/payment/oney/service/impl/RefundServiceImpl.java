@@ -1,5 +1,6 @@
 package com.payline.payment.oney.service.impl;
 
+import com.payline.payment.oney.bean.common.PurchaseStatus;
 import com.payline.payment.oney.bean.request.OneyRefundRequest;
 import com.payline.payment.oney.bean.request.OneyTransactionStatusRequest;
 import com.payline.payment.oney.bean.response.OneyFailureResponse;
@@ -25,12 +26,7 @@ import static com.payline.payment.oney.utils.OneyErrorHandler.handleOneyFailureR
 
 public class RefundServiceImpl implements RefundService {
 
-    private OneyHttpClient httpClient;
     private static final Logger LOGGER = LogManager.getLogger(RefundServiceImpl.class);
-
-    public RefundServiceImpl() {
-        this.httpClient = OneyHttpClient.getInstance();
-    }
 
     @Override
     public RefundResponse refundRequest(RefundRequest refundRequest) {
@@ -38,7 +34,7 @@ public class RefundServiceImpl implements RefundService {
         OneyRefundRequest oneyRefundRequest = null;
         try {
             //obtenir statut de la requete
-            String status = handleStatusRequest(refundRequest);
+            PurchaseStatus.StatusCode status = handleStatusRequest(refundRequest);
             //faire une  transactionStatusRequest
             boolean refundFlag = PluginUtils.getRefundFlag(status);
 
@@ -47,6 +43,7 @@ public class RefundServiceImpl implements RefundService {
                     .fromRefundRequest(refundRequest, refundFlag)
                     .build();
 
+            final OneyHttpClient httpClient = getNewHttpClientInstance(refundRequest);
             StringResponse oneyResponse = httpClient.initiateRefundPayment(oneyRefundRequest, refundRequest.getEnvironment().isSandbox());
             //handle Response
             if (oneyResponse == null) {
@@ -54,7 +51,7 @@ public class RefundServiceImpl implements RefundService {
                 LOGGER.error("Refund is null");
                 return OneyErrorHandler.geRefundResponseFailure(
                         FailureCause.PARTNER_UNKNOWN_ERROR,
-                        oneyRefundRequest.getPurchaseReference(),
+                        refundRequest.getPartnerTransactionId(),
                         "Empty partner response");
             }
             //si erreur dans la requete http
@@ -76,27 +73,34 @@ public class RefundServiceImpl implements RefundService {
                     LOGGER.error("Refund is null");
                     return OneyErrorHandler.geRefundResponseFailure(
                             FailureCause.REFUSED,
-                            oneyRefundRequest.getPurchaseReference(),
+                            refundRequest.getPartnerTransactionId(),
                             "Purchase status : null");
                 }
 
                 LOGGER.info("Refund success");
                 return RefundResponseSuccess.RefundResponseSuccessBuilder.aRefundResponseSuccess()
                         .withPartnerTransactionId(oneyRefundRequest.getPurchaseReference())
-                        .withStatusCode(responseDecrypted.getStatusPurchase().getStatusCode())
+                        .withStatusCode(responseDecrypted.getStatusPurchase().getStatusCode().name())
                         .build();
 
             }
         } catch (PluginTechnicalException e) {
             LOGGER.error("unable init the refund", e);
-            String ref = oneyRefundRequest != null ? oneyRefundRequest.getPurchaseReference() : "null";
             return OneyErrorHandler.geRefundResponseFailure(
                     e.getFailureCause(),
-                    ref,
+                    refundRequest.getPartnerTransactionId(),
                     e.getErrorCodeOrLabel());
+        }catch (RuntimeException e) {
+            LOGGER.error("Unexpected plugin error", e);
+            return RefundResponseFailure.RefundResponseFailureBuilder
+                    .aRefundResponseFailure()
+                    .withErrorCode(PluginTechnicalException.runtimeErrorCode(e))
+                    .withFailureCause(FailureCause.INTERNAL_ERROR)
+                    .build();
         }
 
     }
+
 
     @Override
     public boolean canMultiple() {
@@ -114,13 +118,14 @@ public class RefundServiceImpl implements RefundService {
      * @param refundRequest
      * @return
      */
-    public String handleStatusRequest(RefundRequest refundRequest) throws PluginTechnicalException {
+    public PurchaseStatus.StatusCode handleStatusRequest(RefundRequest refundRequest) throws PluginTechnicalException {
         OneyTransactionStatusRequest oneyTransactionStatusRequest = OneyTransactionStatusRequest.Builder.aOneyGetStatusRequest()
                 .fromRefundRequest(refundRequest)
                 .build();
-        String transactionStatusCode = "";
+        PurchaseStatus.StatusCode transactionStatusCode = null;
         try {
-            StringResponse status = this.httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, refundRequest.getEnvironment().isSandbox());
+            final OneyHttpClient httpClient = getNewHttpClientInstance(refundRequest);
+            StringResponse status = httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, refundRequest.getEnvironment().isSandbox());
             //l'appel est OK on gere selon la response
             if (status.getCode() == HTTP_OK) {
                 TransactionStatusResponse response = TransactionStatusResponse.createTransactionStatusResponseFromJson(status.getContent(), oneyTransactionStatusRequest.getEncryptKey());
@@ -136,4 +141,7 @@ public class RefundServiceImpl implements RefundService {
 
     }
 
+    protected OneyHttpClient getNewHttpClientInstance(final RefundRequest refundRequest) {
+        return OneyHttpClient.getInstance(refundRequest.getPartnerConfiguration());
+    }
 }

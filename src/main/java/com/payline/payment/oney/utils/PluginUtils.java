@@ -1,11 +1,10 @@
 package com.payline.payment.oney.utils;
 
 
+import com.payline.payment.oney.bean.common.PurchaseStatus;
 import com.payline.payment.oney.exception.InvalidDataException;
-import com.payline.payment.oney.exception.InvalidFieldFormatException;
 import com.payline.payment.oney.exception.InvalidRequestException;
 import com.payline.payment.oney.service.impl.RequestConfigServiceImpl;
-import com.payline.payment.oney.service.impl.ResetServiceImpl;
 import com.payline.payment.oney.utils.properties.service.ConfigPropertiesEnum;
 import com.payline.pmapi.bean.capture.request.CaptureRequest;
 import com.payline.pmapi.bean.common.Buyer;
@@ -54,11 +53,7 @@ public class PluginUtils {
         return PluginUtils.requireNonNull((T) map.get(key), err);
     }
 
-// ------------  Methodes de mapping entre Oney et Payline  -----------------------
-
-
-    // Mapping methods between  Payline and Oney
-    //
+    // ------------  Mapping between Oney and Payline codes  -----------------------
 
     /**
      * Mapping Payline Buyer.legalStatus vers Oney personType
@@ -161,6 +156,8 @@ public class PluginUtils {
         }
     }
 
+    // ------------  FIN Mapping between Oney and Payline codes  -----------------------
+
     /**
      * Concatenates and trims two pieces of text, joining them by a space.
      *
@@ -169,7 +166,7 @@ public class PluginUtils {
      * @return The resulting string.
      */
     public static String spaceConcat(String text1, String text2) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
 
         if (text1 != null) {
@@ -196,7 +193,7 @@ public class PluginUtils {
      */
     public static List<String> splitLongText(String toSplit, int maxLength) {
         List<String> chunks = new ArrayList<>();
-        StringBuffer sb = new StringBuffer(toSplit);
+        StringBuilder sb = new StringBuilder(toSplit);
 
         while (sb.length() > 0) {
             // remove whitespaces at the beginning
@@ -210,7 +207,7 @@ public class PluginUtils {
             if (sb.length() <= maxLength) {
                 chunk = sb.toString().trim();
             } else {
-                int splitSpace = sb.substring(0, maxLength + 1).lastIndexOf(" ");
+                int splitSpace = sb.substring(0, maxLength + 1).lastIndexOf(' ');
                 int end = splitSpace >= 0 ? splitSpace : maxLength;
                 chunk = sb.substring(0, end).trim();
             }
@@ -223,8 +220,6 @@ public class PluginUtils {
 
         return chunks;
     }
-
-// --------------------------- FIN methode de mapping -----------------------
 
     /**
      * Genere un merchant request id qui doit etre unique pour chaque requete
@@ -267,14 +262,6 @@ public class PluginUtils {
 
         Locale locale = new Locale("", code);
         return locale.getDisplayCountry();
-    }
-
-    public static String parseReference(String reference) throws InvalidFieldFormatException {
-
-        if (reference == null || reference.isEmpty() || !reference.contains(OneyConstants.PIPE)) {
-            throw new InvalidFieldFormatException("Oney reference should contain a '|' : " + reference, "Oney.PurchaseReference");
-        }
-        return reference.split(OneyConstants.PIPE)[1];
     }
 
     /**
@@ -504,7 +491,10 @@ public class PluginUtils {
         return s.split(SEPARATOR)[2];
     }
 
-    public static String dateToString(Date date){
+    public static String dateToString(Date date) throws InvalidDataException {
+        if(date == null){
+            throw new InvalidDataException("Date must not be null");
+        }
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         return  df.format(date);
     }
@@ -515,16 +505,16 @@ public class PluginUtils {
      * @param transactionStatusRequest
      * @return refundFlag (for refund or cancel request)
      */
-    public static boolean getRefundFlag(String transactionStatusRequest) {
+    public static boolean getRefundFlag(PurchaseStatus.StatusCode transactionStatusRequest) {
 
         if (transactionStatusRequest != null) {
 
             switch (transactionStatusRequest) {
-                case "FUNDED":
+                case FUNDED:
                     return true;
 
-                case "PENDING":
-                case "FAVORABLE":
+                case PENDING:
+                case FAVORABLE:
                     return false;
 
                 default:
@@ -536,5 +526,20 @@ public class PluginUtils {
         // REFUSED / ABORTED / CANCELLED are not valid for refund or cancel ...
         LOGGER.error("Resquest's status {} is not valid for refund or cancel", transactionStatusRequest);
         return false;
+    }
+
+    /**
+     * Build the full external reference (with type and pipe separator).
+     * @param externalReference The external reference
+     * @return The full transaction reference
+     */
+    public static String fullPurchaseReference(String externalReference ){
+        if( externalReference == null ){
+            return null;
+        }
+        if( externalReference.startsWith( OneyConstants.EXTERNAL_REFERENCE_TYPE ) ){
+            return externalReference;
+        }
+        return OneyConstants.EXTERNAL_REFERENCE_TYPE + "|" + externalReference;
     }
 }

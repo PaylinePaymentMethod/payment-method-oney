@@ -2,11 +2,12 @@ package com.payline.payment.oney.utils;
 
 import com.payline.payment.oney.bean.common.purchase.Item;
 import com.payline.payment.oney.exception.InvalidDataException;
-import com.payline.payment.oney.exception.InvalidFieldFormatException;
 import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.bean.payment.ContractConfiguration;
 import com.payline.pmapi.bean.payment.ContractProperty;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
+import com.payline.pmapi.logger.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class PluginUtilsTest {
 
+    private static final Logger LOGGER = LogManager.getLogger(PluginUtilsTest.class);
 
     String merchantId1;
 
@@ -38,7 +40,7 @@ public class PluginUtilsTest {
 
     @BeforeAll
     public void setUp() {
-        paymentRequest = TestUtils.createCompletePaymentBuilder().build();
+        paymentRequest = TestUtils.createCompletePaymentRequestBuilder().build();
         partnerConfiguration = paymentRequest.getPartnerConfiguration();
         contractConfiguration = paymentRequest.getContractConfiguration();
         Whitebox.setInternalState(partnerConfiguration, "partnerConfigurationMap", new HashMap<>());
@@ -396,47 +398,6 @@ public class PluginUtilsTest {
     }
 
     @Test
-    public void parseReference_noPipe() {
-        Throwable exception = Assertions.assertThrows(InvalidFieldFormatException.class, () -> {
-
-
-            parseReference("test#test");
-
-        });
-
-    }
-
-
-    @Test
-    public void parseReference_emptyReference() {
-        Throwable exception = Assertions.assertThrows(InvalidFieldFormatException.class, () -> {
-
-
-            parseReference("");
-
-        });
-
-    }
-
-
-    @Test
-    public void parseReference_nullReference() {
-        Throwable exception = Assertions.assertThrows(InvalidFieldFormatException.class, () -> {
-
-
-            parseReference(null);
-
-        });
-
-    }
-
-    @Test
-    public void testParseReference() throws InvalidFieldFormatException {
-        String ref = parseReference("xxx%7Ctest");
-        Assertions.assertEquals("test", ref);
-    }
-
-    @Test
     public void testGenerateMerchantRequestId() throws Exception {
 
         merchantId1 = generateMerchantRequestId("merchantId");
@@ -482,12 +443,22 @@ public class PluginUtilsTest {
     }
 
     @Test
-    void dateToString(){
+    void dateToString() throws InvalidDataException {
         Date date = new Date();
         String sDate = PluginUtils.dateToString(date);
 
         Assertions.assertNotNull(sDate);
         Assertions.assertTrue(sDate.matches("[0-9]{4}-[0-1][0-9]-[0-3][0-9]"));
+    }
+
+    @Test
+    void dateToStringException () {
+        Throwable exception = Assertions.assertThrows(InvalidDataException.class, () -> {
+            Date date = null;
+            String sDate = PluginUtils.dateToString(date);
+        });
+
+
     }
 
 }

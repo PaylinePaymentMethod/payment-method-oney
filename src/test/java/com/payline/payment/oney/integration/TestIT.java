@@ -166,12 +166,12 @@ public abstract class TestIT extends AbstractPaymentIntegration {
 
     @Override
     public PaymentRequest createDefaultPaymentRequest() {
-        return TestUtils.createCompletePaymentBuilder(getContry(), generateContractConfiguration(),
+        return TestUtils.createCompletePaymentRequestBuilder(getCountry(), generateContractConfiguration(),
                 generatePaymentFormContext(), generatePartnerConfiguration()).build();
 
     }
 
-    public TestCountry getContry() {
+    public TestCountry getCountry() {
         return null;
     }
 

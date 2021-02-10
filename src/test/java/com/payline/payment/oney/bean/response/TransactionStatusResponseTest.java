@@ -7,6 +7,7 @@ import com.payline.payment.oney.utils.http.StringResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.payline.payment.oney.bean.common.PurchaseStatus.StatusCode.PENDING;
 import static com.payline.payment.oney.bean.response.TransactionStatusResponse.createTransactionStatusResponseFromJson;
 import static com.payline.payment.oney.utils.TestUtils.createStringResponse;
 
@@ -25,7 +26,7 @@ public class TransactionStatusResponseTest extends OneyConfigBean {
         mockCorrectlyConfigPropertiesEnum(false);
         //Cas reponse dechiffre
         TransactionStatusResponse status1 = createTransactionStatusResponseFromJson(encryptedResponse.getContent(), null);
-        Assertions.assertEquals("PENDING", status1.getStatusPurchase().getStatusCode());
+        Assertions.assertEquals(PENDING, status1.getStatusPurchase().getStatusCode());
         Assertions.assertEquals("Waiting for customer validation", status1.getStatusPurchase().getStatusLabel());
 
 
@@ -39,7 +40,7 @@ public class TransactionStatusResponseTest extends OneyConfigBean {
         mockCorrectlyConfigPropertiesEnum(true);
         //Cas reponse chiffre
         TransactionStatusResponse status1 = createTransactionStatusResponseFromJson(encryptedResponse.getContent(), key);
-        Assertions.assertEquals("PENDING", status1.getStatusPurchase().getStatusCode());
+        Assertions.assertEquals(PENDING, status1.getStatusPurchase().getStatusCode());
         Assertions.assertEquals("Waiting for customer validation", status1.getStatusPurchase().getStatusLabel());
 
 

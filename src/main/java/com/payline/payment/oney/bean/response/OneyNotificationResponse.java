@@ -5,8 +5,9 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.PurchaseNotification;
 import com.payline.payment.oney.bean.common.customer.Customer;
-import com.payline.payment.oney.exception.DecryptException;
+import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.exception.MalformedJsonException;
+import com.payline.payment.oney.exception.PluginTechnicalException;
 import com.payline.payment.oney.utils.properties.service.ConfigPropertiesEnum;
 import com.payline.pmapi.logger.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -68,26 +69,25 @@ public class OneyNotificationResponse extends OneyResponse {
         return merchantContext;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return Stream.of(languageCode, merchantGuid, oneyRequestId, purchase, customer, pspContext, merchantContext)
                 .allMatch(Objects::isNull);
     }
 
     public static OneyNotificationResponse createTransactionStatusResponseFromJson(String json, String encryptKey)
-            throws DecryptException, MalformedJsonException {
+            throws PluginTechnicalException {
         Gson parser = new Gson();
 
         OneyNotificationResponse oneyNotificationResponse;
         try {
             oneyNotificationResponse = parser.fromJson(json, OneyNotificationResponse.class);
-        }
-        catch( JsonSyntaxException e){
+        } catch (JsonSyntaxException e) {
             LOGGER.error("Unable to parse JSON content", e);
-            throw new MalformedJsonException( e );
+            throw new MalformedJsonException(e);
         }
 
         // JSON was properly formed, but there was some unexpected field()s in the content.
-        if( oneyNotificationResponse.isEmpty() ){
+        if (oneyNotificationResponse.isEmpty()) {
             throw new MalformedJsonException("Unable to parse JSON as OneyNotificationResponse");
         }
 
@@ -95,11 +95,17 @@ public class OneyNotificationResponse extends OneyResponse {
         if (Boolean.valueOf(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
             String decryptedMessage = OneyResponse.decryptMessage(oneyNotificationResponse.getEncryptedMessage(), encryptKey);
 
-            return parser.fromJson(decryptedMessage, OneyNotificationResponse.class);
+            oneyNotificationResponse = parser.fromJson(decryptedMessage, OneyNotificationResponse.class);
 
         }
 
-        //Sinon on renvoie la reponse parsee
+        // Check oney response integity
+        if (oneyNotificationResponse.purchase == null) {
+            throw new InvalidDataException("Purchase must not be null", "purchase");
+        } else if (oneyNotificationResponse.customer == null) {
+            throw new InvalidDataException("Customer must not be null", "customer");
+
+        }
         return oneyNotificationResponse;
     }
 

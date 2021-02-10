@@ -5,13 +5,19 @@ import com.payline.payment.oney.bean.request.*;
 import com.payline.payment.oney.exception.HttpCallException;
 import com.payline.payment.oney.exception.PluginTechnicalException;
 import com.payline.payment.oney.utils.properties.service.ConfigPropertiesEnum;
+import com.payline.pmapi.bean.configuration.PartnerConfiguration;
+import com.payline.pmapi.logger.LogManager;
 import org.apache.http.Header;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
+import org.apache.logging.log4j.Logger;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.payline.payment.oney.utils.OneyConstants.*;
 
@@ -28,25 +34,31 @@ public class OneyHttpClient extends AbstractHttpClient {
     public static final String MERCHANT_GUID_TAG = "/merchant_guid/";
     public static final String REFERENCE_TAG = "/reference/";
 
+    private static final Logger LOGGER = LogManager.getLogger(OneyHttpClient.class);
+
+
+    private static final AtomicBoolean isInit = new AtomicBoolean(false);
+
+    private static OneyHttpClient instance;
+
+
     /**
      * Instantiate a HTTP client with default values.
      */
-    private OneyHttpClient() {
-        super();
-    }
-
-    /**
-     * Singleton Holder
-     */
-    private static class SingletonHolder {
-        private static final OneyHttpClient INSTANCE = new OneyHttpClient();
+    private OneyHttpClient(final PartnerConfiguration partnerConfiguration) {
+        super(partnerConfiguration);
     }
 
     /**
      * @return the singleton instance
      */
-    public static OneyHttpClient getInstance() {
-        return SingletonHolder.INSTANCE;
+    public static OneyHttpClient getInstance(final PartnerConfiguration partnerConfiguration) {
+        //On initialise le service avec les configurations du partenaire si c'est le premier appel.
+        if (!isInit.getAndSet(true)) {
+            LOGGER.info("Initialisation du service HTTP Client");
+            instance = new OneyHttpClient(partnerConfiguration);
+        }
+        return instance;
     }
 
 
@@ -159,7 +171,12 @@ public class OneyHttpClient extends AbstractHttpClient {
         Map<String, String> parameters = new HashMap<>(request.getCallParameters());
         parameters.put(PSP_GUID, request.getPspGuid());
         parameters.put(MERCHANT_GUID, request.getMerchantGuid());
-        parameters.put(REFERENCE, request.getPurchaseReference());
+        try {
+            parameters.put(REFERENCE, URLEncoder.encode(request.getPurchaseReference(), StandardCharsets.UTF_8.name()));
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new PluginTechnicalException(e, "Plugin error: while encoding purchaseReference");
+        }
         String path = buildConfirmOrderPath(CONFIRM_REQUEST_URL, parameters);
         String jsonBody = null;
         if (Boolean.valueOf(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
@@ -178,7 +195,12 @@ public class OneyHttpClient extends AbstractHttpClient {
         Map<String, String> parameters = new HashMap<>(request.getCallParameters());
         parameters.put(PSP_GUID, request.getPspGuid());
         parameters.put(MERCHANT_GUID, request.getMerchantGuid());
-        parameters.put(REFERENCE, request.getPurchaseReference());
+        try {
+            parameters.put(REFERENCE, URLEncoder.encode(request.getPurchaseReference(), StandardCharsets.UTF_8.name()));
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new PluginTechnicalException(e, "Plugin error: while encoding purchaseReference");
+        }
         String path = buildRefundOrderPath(CANCEL_REQUEST_URL, parameters);
         String jsonBody;
         if (Boolean.valueOf(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
@@ -192,11 +214,16 @@ public class OneyHttpClient extends AbstractHttpClient {
     }
 
     public StringResponse initiateGetTransactionStatus(OneyTransactionStatusRequest request, boolean isSandbox)
-            throws HttpCallException {
+            throws PluginTechnicalException {
         Map<String, String> parameters = new HashMap<>(request.getCallParameters());
         parameters.put(PSP_GUID, request.getPspGuid());
         parameters.put(MERCHANT_GUID, request.getMerchantGuid());
-        parameters.put(REFERENCE, request.getPurchaseReference());
+        try {
+            parameters.put(REFERENCE, URLEncoder.encode(request.getPurchaseReference(), StandardCharsets.UTF_8.name()));
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new PluginTechnicalException(e, "Plugin error: while encoding purchaseReference");
+        }
 
         Map<String, String> urlParameters = new HashMap<>();
         urlParameters.put(LANGUAGE_CODE, request.getLanguageCode());

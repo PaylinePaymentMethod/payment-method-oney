@@ -22,8 +22,6 @@ public class OneyConfigBean {
 
     private Properties properties;
 
-    private final Logger logger = LogManager.getLogger(OneyConfigBean.class);
-
     @BeforeAll
     public void setup() throws Exception {
         ConfigPropertiesEnum configPropertiesEnum = ConfigPropertiesEnum.INSTANCE;
@@ -39,12 +37,7 @@ public class OneyConfigBean {
      * @param s boolean : chiffrement activé ?
      */
     protected void mockCorrectlyConfigPropertiesEnum(final boolean s) {
-        if (configPropertiesEnumMockUp != null) {
-            configPropertiesEnumMockUp.tearDown();
-        }
-
         configPropertiesEnumMockUp = new MockUp<ConfigPropertiesEnum>() {
-
 
             @Mock
             public String get(String key) {
@@ -55,13 +48,6 @@ public class OneyConfigBean {
                 }
             }
         };
-    }
-
-    @AfterEach
-    public void tearDown() {
-        if (configPropertiesEnumMockUp != null) {
-            configPropertiesEnumMockUp.tearDown();
-        }
     }
 
 }

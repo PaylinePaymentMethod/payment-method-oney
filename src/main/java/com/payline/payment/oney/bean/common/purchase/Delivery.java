@@ -3,11 +3,7 @@ package com.payline.payment.oney.bean.common.purchase;
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyAddress;
 import com.payline.payment.oney.bean.common.OneyBean;
-import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.Required;
-import com.payline.pmapi.bean.common.Buyer;
-import com.payline.pmapi.bean.payment.Order;
-import com.payline.pmapi.bean.payment.request.PaymentRequest;
 
 public class Delivery extends OneyBean {
 
@@ -124,48 +120,6 @@ public class Delivery extends OneyBean {
 
         public Delivery.Builder withDeliveryAddress(OneyAddress address) {
             this.deliveryAddress = address;
-            return this;
-        }
-
-        public Delivery.Builder fromPayline(PaymentRequest request) {
-
-            Order order = request.getOrder();
-            if (order != null) {
-                this.withDeliveryDate(PluginUtils.dateToString(order.getExpectedDeliveryDate()));
-                if (request.getOrder() != null) {
-                    this.withDeliveryModeCode(PluginUtils.getOneyDeliveryModeCode(order.getDeliveryMode()));
-                    this.withDeliveryOption(PluginUtils.getOneyDeliveryOption(order.getDeliveryTime()));
-                }
-            }
-
-
-            // set the address_type from the delivery mode code (see JIRA 175)
-            switch (this.deliveryModeCode) {
-                case 1:
-                case 2:
-                case 3:
-                    this.withAddressType(this.deliveryModeCode);
-                    break;
-                case 4:
-                    this.withAddressType(5);
-                    break;
-                case 5:
-                    this.withAddressType(6);
-                    break;
-                case 6:
-                    this.withAddressType(4);
-                    break;
-                default:
-                    this.withAddressType(1);
-                    break;
-            }
-
-            Buyer buyer = request.getBuyer();
-            if (buyer != null) {
-                this.withRecipient(Recipient.Builder.aRecipientBuilder().fromPayline(buyer).build());
-                this.withDeliveryAddress(OneyAddress.Builder.aOneyAddressBuilder().fromPayline(buyer, Buyer.AddressType.DELIVERY)
-                        .build());
-            }
             return this;
         }
 

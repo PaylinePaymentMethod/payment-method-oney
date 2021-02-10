@@ -53,7 +53,7 @@ public class PaymentFormConfigurationServiceImplTest {
                 .withBuyer(createDefaultBuyer())
                 .withAmount(new Amount(null, Currency.getInstance("EUR")))
                 .withContractConfiguration(contractConfiguration)
-                .withOrder(createOrder("007"))
+                .withOrder(createCompleteOrder("007"))
                 .withEnvironment(environment)
                 .withPartnerConfiguration(createDefaultPartnerConfiguration())
                 .build();
@@ -62,7 +62,7 @@ public class PaymentFormConfigurationServiceImplTest {
 
         Assertions.assertNotNull(paymentFormConfigurationResponse.getPaymentForm());
         Assertions.assertEquals("Payer avec Oney " + nbEcheances, paymentFormConfigurationResponse.getPaymentForm().getButtonText());
-        Assertions.assertEquals("Payer avec Oney " + nbEcheances, paymentFormConfigurationResponse.getPaymentForm().getDescription());
+        Assertions.assertEquals("En sélectionnant ce moyen de paiement, vous serez redirigé sur le site dOney afin de faciliter votre paiement.", paymentFormConfigurationResponse.getPaymentForm().getDescription());
         Assertions.assertTrue(paymentFormConfigurationResponse.getPaymentForm().isDisplayButton());
     }
 

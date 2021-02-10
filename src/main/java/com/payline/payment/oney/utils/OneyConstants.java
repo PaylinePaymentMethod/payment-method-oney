@@ -1,5 +1,7 @@
 package com.payline.payment.oney.utils;
 
+import java.util.LinkedHashMap;
+
 public class OneyConstants {
 
     private OneyConstants() {
@@ -18,9 +20,7 @@ public class OneyConstants {
     public static final String SECRET_VALUE_ON = "Method-body";
     public static final String SECRET_VALUE_OFF = "None";
 
-    public static final String CONFIG_HTTP_CONNECT_TIMEOUT = "http.connectTimeout";
-    public static final String CONFIG_HTTP_WRITE_TIMEOUT = "http.writeTimeout";
-    public static final String CONFIG_HTTP_READ_TIMEOUT = "http.readTimeout";
+
 
 
     //Constant specific of this payment method
@@ -73,9 +73,6 @@ public class OneyConstants {
     public static final String HEADER_COUNTRY_CODE = "oney.coutry.code";
 
 
-    public static final String PIPE = "%7C";
-
-
     // Request URL's
     public static final String PAYMENT_REQUEST_URL = "/payments/v1/purchase/facilypay_url";
     public static final String CONFIRM_REQUEST_URL = "/payments/v1/purchase";
@@ -107,8 +104,23 @@ public class OneyConstants {
     public static final String COUNTRY_NOT_ISO = "contract.errors.countryNotISO";
     public static final String LANGUAGE_NOT_ISO = "contract.errors.languageNotISO";
 
+    public static final String COUNTRY_NOT_IN_LIST = "contract.errors.countryNotInList";
+
     public static final String UNEXPECTED_ERR = "error.unexpected";
 
 
     public static final String DATE_FORMAT = "\\d{4}-\\d{2}-\\d{2}";
+
+
+    // The list of pays accepted bay the API
+    public static LinkedHashMap<String, String> listCountry() {
+        final LinkedHashMap<String, String> codes = new LinkedHashMap<>();
+        codes.put("FR", "FR");
+        codes.put("BE", "BE");
+        codes.put("IT", "IT");
+        codes.put("ES", "ES");
+        codes.put("SP", "SP");
+        codes.put("PT", "PT");
+        return codes;
+    }
 }

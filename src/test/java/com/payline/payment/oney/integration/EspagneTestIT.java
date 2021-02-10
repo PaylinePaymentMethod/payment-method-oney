@@ -50,7 +50,7 @@ public class EspagneTestIT extends TestIT {
     }
 
     @Override
-    public TestCountry getContry() {
+    public TestCountry getCountry() {
         return TestCountry.ES;
     }
 }

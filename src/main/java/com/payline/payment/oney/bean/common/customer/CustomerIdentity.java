@@ -2,11 +2,14 @@ package com.payline.payment.oney.bean.common.customer;
 
 import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyBean;
+import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.Required;
 import com.payline.pmapi.bean.common.Buyer;
 
+
 public class CustomerIdentity extends OneyBean {
+
 
     @SerializedName("individual_taxpayer_code")
     private String taxpayerCode;
@@ -209,7 +212,7 @@ public class CustomerIdentity extends OneyBean {
             return this;
         }
 
-        public CustomerIdentity.Builder fromPayline(Buyer buyer) {
+        public CustomerIdentity.Builder fromPayline(Buyer buyer) throws InvalidDataException {
             if (buyer == null) {
                 return null;
             }

@@ -4,8 +4,6 @@ import com.google.gson.annotations.SerializedName;
 import com.payline.payment.oney.bean.common.OneyAddress;
 import com.payline.payment.oney.bean.common.OneyBean;
 import com.payline.payment.oney.utils.Required;
-import com.payline.pmapi.bean.common.Buyer;
-import com.payline.pmapi.bean.payment.request.PaymentRequest;
 
 public class Customer extends OneyBean {
 
@@ -101,8 +99,8 @@ public class Customer extends OneyBean {
             return new Customer.Builder();
         }
 
-        public Customer.Builder withTrustFlag(Integer flag) {
-            this.trustFlag = flag;
+        public Customer.Builder withTrustFlag(Integer trustFlag) {
+            this.trustFlag = trustFlag;
             return this;
         }
 
@@ -133,26 +131,6 @@ public class Customer extends OneyBean {
 
         public Customer.Builder withContactDetails(ContactDetails details) {
             this.contactDetails = details;
-            return this;
-        }
-
-        public Customer.Builder fromPaylineRequest(PaymentRequest request) {
-            this.trustFlag = null;
-            Buyer buyer = request.getBuyer();
-            if (buyer == null) {
-                return null;
-            }
-            this.withCustomerExternalCode(buyer.getCustomerIdentifier()) ;
-            this.withLanguageCode(request.getLocale().getLanguage()) ;
-            this.withCustomerIdentity(CustomerIdentity.Builder.aCustomerIdentity()
-                    .fromPayline(buyer)
-                    .build());
-            this.withContactDetails( ContactDetails.Builder.aContactDetailsBuilder()
-                    .fromPayline(buyer)
-                    .build());
-            this.withCustomerAddress( OneyAddress.Builder.aOneyAddressBuilder()
-                    .fromPayline(buyer, Buyer.AddressType.BILLING)
-                    .build());
             return this;
         }
 

@@ -6,6 +6,7 @@ import com.payline.payment.oney.bean.request.OneyTransactionStatusRequest;
 import com.payline.payment.oney.bean.response.OneyFailureResponse;
 import com.payline.payment.oney.bean.response.TransactionStatusResponse;
 import com.payline.payment.oney.exception.PluginTechnicalException;
+import com.payline.payment.oney.utils.OneyConstants;
 import com.payline.payment.oney.utils.OneyErrorHandler;
 import com.payline.payment.oney.utils.http.OneyHttpClient;
 import com.payline.payment.oney.utils.http.StringResponse;
@@ -23,103 +24,106 @@ import com.payline.pmapi.logger.LogManager;
 import com.payline.pmapi.service.PaymentWithRedirectionService;
 import org.apache.logging.log4j.Logger;
 
+import static com.payline.payment.oney.bean.common.PurchaseStatus.StatusCode.FAVORABLE;
 import static com.payline.payment.oney.bean.response.PaymentErrorResponse.paymentErrorResponseFromJson;
 import static com.payline.payment.oney.bean.response.TransactionStatusResponse.createTransactionStatusResponseFromJson;
-import static com.payline.payment.oney.utils.OneyConstants.EXTERNAL_REFERENCE_KEY;
 import static com.payline.payment.oney.utils.OneyConstants.HTTP_OK;
 import static com.payline.payment.oney.utils.OneyErrorHandler.handleOneyFailureResponse;
 
 public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirectionService {
 
     private static final Logger LOGGER = LogManager.getLogger(PaymentWithRedirectionServiceImpl.class);
-    private OneyHttpClient httpClient;
 
     private static final String ERROR_CODE = "Purchase status : ";
-
-    public PaymentWithRedirectionServiceImpl() {
-        this.httpClient = OneyHttpClient.getInstance();
-    }
+    private static final String ERROR_NO_PURCHASE_STATUS = "No purchase status";
 
     @Override
     public PaymentResponse finalizeRedirectionPayment(RedirectionPaymentRequest redirectionPaymentRequest) {
-        String partnerTransactionId = redirectionPaymentRequest.getRequestContext().getRequestData().get(EXTERNAL_REFERENCE_KEY);
+        PaymentResponse paymentResponse;
+        String partnerTransactionId = redirectionPaymentRequest.getRequestContext().getRequestData().get(OneyConstants.EXTERNAL_REFERENCE_KEY);
         boolean isSandbox = redirectionPaymentRequest.getEnvironment().isSandbox();
         try {
             OneyTransactionStatusRequest oneyTransactionStatusRequest = OneyTransactionStatusRequest.Builder.aOneyGetStatusRequest()
                     .fromRedirectionPaymentRequest(redirectionPaymentRequest)
                     .build();
-            StringResponse status = this.httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, isSandbox);
+            final OneyHttpClient httpClient = getNewHttpClientInstance(redirectionPaymentRequest);
+            StringResponse status = httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, isSandbox);
 
-
-            PaymentResponse paymentResponse = findErrorResponse(status, oneyTransactionStatusRequest.getPurchaseReference(), oneyTransactionStatusRequest.getEncryptKey());
-            if (paymentResponse != null) {
-                return paymentResponse;
-            } else {
+            paymentResponse = findErrorResponse(status, partnerTransactionId, oneyTransactionStatusRequest.getEncryptKey());
+            if (paymentResponse == null) {
                 // Special case in which we need to send a confirmation request
                 TransactionStatusResponse response = TransactionStatusResponse.createTransactionStatusResponseFromJson(status.getContent(), oneyTransactionStatusRequest.getEncryptKey());
                 if (response.getStatusPurchase() != null) {
 
                     // Special case in which we need to send a confirmation request
-                    if (redirectionPaymentRequest.isCaptureNow() && "FAVORABLE".equals(response.getStatusPurchase().getStatusCode())) {
+                    if (redirectionPaymentRequest.isCaptureNow() && FAVORABLE.equals(response.getStatusPurchase().getStatusCode())) {
                         OneyConfirmRequest confirmRequest = new OneyConfirmRequest.Builder(redirectionPaymentRequest)
                                 .build();
-                        return this.validatePayment(confirmRequest, isSandbox);
+                        paymentResponse = this.validatePayment(confirmRequest, isSandbox, partnerTransactionId, httpClient);
                     } else {
-                        return handleTransactionStatusResponse(response, partnerTransactionId);
-
+                        paymentResponse = handleTransactionStatusResponse(response, partnerTransactionId);
                     }
 
                 } else {
                     //Pas de statut pour cette demande
-                    return OneyErrorHandler.getPaymentResponseFailure(
+                    paymentResponse = OneyErrorHandler.getPaymentResponseFailure(
                             FailureCause.CANCEL,
-                            oneyTransactionStatusRequest.getPurchaseReference(),
-                            ERROR_CODE + "null");
+                            partnerTransactionId,
+                            ERROR_NO_PURCHASE_STATUS);
                 }
             }
 
         } catch (PluginTechnicalException e) {
-            return e.toPaymentResponseFailure();
+            paymentResponse = e.toPaymentResponseFailure();
+        } catch (RuntimeException e) {
+            LOGGER.error("Unexpected plugin error", e);
+            paymentResponse = PaymentResponseFailure.PaymentResponseFailureBuilder
+                    .aPaymentResponseFailure()
+                    .withErrorCode(PluginTechnicalException.runtimeErrorCode(e))
+                    .withFailureCause(FailureCause.INTERNAL_ERROR)
+                    .build();
         }
+        return paymentResponse;
     }
+
 
     @Override
     public PaymentResponse handleSessionExpired(TransactionStatusRequest transactionStatusRequest) {
+        PaymentResponse paymentResponse;
+        String externalReference = transactionStatusRequest.getOrder().getReference();
         try {
             OneyTransactionStatusRequest oneyTransactionStatusRequest = OneyTransactionStatusRequest.Builder.aOneyGetStatusRequest()
                     .fromTransactionStatusRequest(transactionStatusRequest)
                     .build();
-            StringResponse status = this.httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, transactionStatusRequest.getEnvironment().isSandbox());
+            final OneyHttpClient httpClient = getNewHttpClientInstance(transactionStatusRequest);
+            StringResponse status = httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, transactionStatusRequest.getEnvironment().isSandbox());
 
-
-            PaymentResponse paymentResponse = findErrorResponse(status, oneyTransactionStatusRequest.getPurchaseReference(), oneyTransactionStatusRequest.getEncryptKey());
-            if (paymentResponse != null) {
-                return paymentResponse;
-            } else {
+            paymentResponse = findErrorResponse(status, externalReference, oneyTransactionStatusRequest.getEncryptKey());
+            if (paymentResponse == null) {
                 // Special case in which we need to send a confirmation request
                 TransactionStatusResponse response = TransactionStatusResponse.createTransactionStatusResponseFromJson(status.getContent(), oneyTransactionStatusRequest.getEncryptKey());
                 if (response.getStatusPurchase() != null) {
                     // Special case in which we need to send a confirmation request
-                    if ("FAVORABLE".equals(response.getStatusPurchase().getStatusCode())) {
+                    if (FAVORABLE.equals(response.getStatusPurchase().getStatusCode())) {
                         OneyConfirmRequest confirmRequest = new OneyConfirmRequest.Builder(transactionStatusRequest)
                                 .build();
-                        return this.validatePayment(confirmRequest, transactionStatusRequest.getEnvironment().isSandbox());
+                        paymentResponse = this.validatePayment(confirmRequest, transactionStatusRequest.getEnvironment().isSandbox(), externalReference, httpClient);
                     } else {
-                        return this.handleTransactionStatusResponse(response,
-                                oneyTransactionStatusRequest.getPurchaseReference());
+                        paymentResponse = this.handleTransactionStatusResponse(response, externalReference);
                     }
                 } else {
                     //Pas de statut pour cette demande
-                    return OneyErrorHandler.getPaymentResponseFailure(
+                    paymentResponse = OneyErrorHandler.getPaymentResponseFailure(
                             FailureCause.CANCEL,
-                            oneyTransactionStatusRequest.getPurchaseReference(),
-                            ERROR_CODE + "null");
+                            externalReference,
+                            ERROR_NO_PURCHASE_STATUS);
                 }
             }
 
         } catch (PluginTechnicalException e) {
-            return e.toPaymentResponseFailure();
+            paymentResponse = e.toPaymentResponseFailure();
         }
+        return paymentResponse;
     }
 
 
@@ -128,8 +132,9 @@ public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirection
      *
      * @return PaymentResponse
      */
-    public PaymentResponse validatePayment(OneyConfirmRequest confirmRequest, boolean isSandbox) throws PluginTechnicalException {
+    public PaymentResponse validatePayment(OneyConfirmRequest confirmRequest, boolean isSandbox, String partnerTransactionId, final OneyHttpClient httpClient) throws PluginTechnicalException {
         LOGGER.info("payment confirmation request nedeed");
+
         StringResponse oneyResponse = httpClient.initiateConfirmationPayment(confirmRequest, isSandbox);
 
         // si erreur lors de l'envoi de la requete http
@@ -138,15 +143,14 @@ public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirection
             LOGGER.error("Payment is null");
             return OneyErrorHandler.getPaymentResponseFailure(
                     FailureCause.PARTNER_UNKNOWN_ERROR,
-                    confirmRequest.getPurchaseReference(),
+                    partnerTransactionId,
                     "Empty partner response"
             );
 
         }
         try {
             //si erreur dans la requete http
-
-            PaymentResponse paymentResponse = findErrorResponse(oneyResponse, confirmRequest.getPurchaseReference(), confirmRequest.getEncryptKey());
+            PaymentResponse paymentResponse = findErrorResponse(oneyResponse, partnerTransactionId, confirmRequest.getEncryptKey());
             if (paymentResponse != null) {
                 return paymentResponse;
             } else {
@@ -156,34 +160,42 @@ public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirection
                     LOGGER.error("Transaction status response or purchase status is null");
                     return OneyErrorHandler.getPaymentResponseFailure(
                             FailureCause.REFUSED,
-                            confirmRequest.getPurchaseReference(),
-                            ERROR_CODE + "null");
+                            partnerTransactionId,
+                            ERROR_NO_PURCHASE_STATUS);
                 }
-                return this.handleTransactionStatusResponse(responseDecrypted, confirmRequest.getPurchaseReference());
+
+                return this.handleTransactionStatusResponse(responseDecrypted, partnerTransactionId);
             }
         } catch (PluginTechnicalException e) {
             return e.toPaymentResponseFailure();
         }
+    }
+    protected OneyHttpClient getNewHttpClientInstance(final RedirectionPaymentRequest redirectionPaymentRequest) {
+        return OneyHttpClient.getInstance(redirectionPaymentRequest.getPartnerConfiguration());
+    }
+
+    protected OneyHttpClient getNewHttpClientInstance(final TransactionStatusRequest transactionStatusRequest) {
+        return OneyHttpClient.getInstance(transactionStatusRequest.getPartnerConfiguration());
     }
 
     private PaymentResponse handleTransactionStatusResponse(TransactionStatusResponse response,
                                                             String purchaseReference) {
         PurchaseStatus purchaseStatus = response.getStatusPurchase();
         switch (purchaseStatus.getStatusCode()) {
-            case "PENDING":
+            case PENDING:
                 // Payline: PENDING
                 return PaymentResponseOnHold.PaymentResponseOnHoldBuilder.aPaymentResponseOnHold()
                         .withPartnerTransactionId(purchaseReference)
                         .withOnHoldCause(OnHoldCause.SCORING_ASYNC)
                         .build();
-            case "REFUSED":
+            case REFUSED:
                 // Payline: REFUSED
                 return OneyErrorHandler.getPaymentResponseFailure(
                         FailureCause.REFUSED,
                         purchaseReference,
                         addErrorCode(response)
                 );
-            case "ABORTED":
+            case ABORTED:
                 // Payline:
                 // CANCEL or SESSION_EXPIRED according to Confluence mapping.
                 // Always CANCEL according to the former code...
@@ -192,10 +204,10 @@ public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirection
                         purchaseReference,
                         addErrorCode(response)
                 );
-            case "FAVORABLE":
-            case "FUNDED":
-            case "CANCELLED":
-            case "TO_BE_FUNDED":
+            case FAVORABLE:
+            case FUNDED:
+            case CANCELLED:
+            case TO_BE_FUNDED:
                 // Payline: ACCEPTED
                 String message = purchaseStatus.getStatusLabel() != null ? purchaseStatus.getStatusLabel() : "OK";
                 return PaymentResponseSuccess.PaymentResponseSuccessBuilder.aPaymentResponseSuccess()
@@ -207,7 +219,7 @@ public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirection
                         .build();
             default:
                 // Should not be encountered !
-                LOGGER.error("Unexpected purchase status code encountered: " + purchaseStatus.getStatusCode());
+                LOGGER.error("Unexpected purchase status code encountered: {}", purchaseStatus.getStatusCode());
                 return OneyErrorHandler.getPaymentResponseFailure(
                         FailureCause.PARTNER_UNKNOWN_ERROR,
                         purchaseReference,
@@ -239,7 +251,7 @@ public class PaymentWithRedirectionServiceImpl implements PaymentWithRedirection
                 return OneyErrorHandler.getPaymentResponseFailure(
                         FailureCause.REFUSED,
                         partnerTransactionID,
-                        ERROR_CODE + "null");
+                        ERROR_NO_PURCHASE_STATUS);
             }
             return this.handleTransactionStatusResponse(responseDecrypted, partnerTransactionID);
         }

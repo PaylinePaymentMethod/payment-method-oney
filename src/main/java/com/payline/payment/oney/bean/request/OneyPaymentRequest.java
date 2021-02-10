@@ -7,6 +7,7 @@ import com.payline.payment.oney.bean.common.customer.Customer;
 import com.payline.payment.oney.bean.common.customer.PurchaseHistory;
 import com.payline.payment.oney.bean.common.payment.PaymentData;
 import com.payline.payment.oney.bean.common.purchase.Purchase;
+import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.utils.Required;
 
 import java.util.Map;
@@ -205,7 +206,7 @@ public class OneyPaymentRequest extends OneyRequest {
             return this;
         }
 
-        public Builder withPurchaseHistory(PurchaseHistory purchaseHistory){
+        public Builder withPurchaseHistory(PurchaseHistory purchaseHistory) {
             this.purchaseHistory = purchaseHistory;
             return this;
         }
@@ -242,8 +243,28 @@ public class OneyPaymentRequest extends OneyRequest {
             return this;
         }
 
-        public OneyPaymentRequest build() {
+        public OneyPaymentRequest build() throws InvalidDataException {
+            this.checkIntegrity();
             return new OneyPaymentRequest(this);
+        }
+
+        private void checkIntegrity() throws InvalidDataException {
+            if (purchase == null) {
+                throw new InvalidDataException("Purchase cannot be null", "purchase");
+            }
+
+            if (customer == null) {
+                throw new InvalidDataException("Customer cannot be null", "customer");
+            }
+
+            if (paymentData == null) {
+                throw new InvalidDataException("PaymentData cannot be null", "paymentData");
+            }
+
+            if (navigationData == null) {
+                throw new InvalidDataException("NavigationData cannot be null", "navigationData");
+            }
+
         }
 
     }

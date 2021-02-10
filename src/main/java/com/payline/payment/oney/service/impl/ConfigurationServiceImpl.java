@@ -6,6 +6,7 @@ import com.payline.payment.oney.exception.DecryptException;
 import com.payline.payment.oney.exception.HttpCallException;
 import com.payline.payment.oney.exception.InvalidDataException;
 import com.payline.payment.oney.utils.OneyCheckConstants;
+import com.payline.payment.oney.utils.OneyConstants;
 import com.payline.payment.oney.utils.PluginUtils;
 import com.payline.payment.oney.utils.http.OneyHttpClient;
 import com.payline.payment.oney.utils.http.StringResponse;
@@ -35,8 +36,6 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     private static final Logger LOGGER = LogManager.getLogger(ConfigurationServiceImpl.class);
 
     private I18nService i18n = I18nService.getInstance();
-
-    private OneyHttpClient httpClient = OneyHttpClient.getInstance();
 
     @Override
     public List<AbstractParameter> getParameters(Locale locale) {
@@ -79,12 +78,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         codePays.setLabel(this.i18n.getMessage(COUNTRY_CODE_LABEL, locale));
         codePays.setDescription(COUNTRY_CODE_DESCRIPTION);
         codePays.setRequired(true);
-        final LinkedHashMap<String, String> codes = new LinkedHashMap<>();
-        codes.put("FR", "FR");
-        codes.put("BE", "BE");
-        codes.put("IT", "IT");
-        codes.put("ES", "ES");
-        codePays.setList(codes);
+        codePays.setList(OneyConstants.listCountry());
         codePays.setValue("FR");
         parameters.add(codePays);
 
@@ -132,9 +126,19 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         try {
 
             codePays = RequestConfigServiceImpl.INSTANCE.getParameterValue(contractParametersCheckRequest, COUNTRY_CODE_KEY);
+            // take the list of valid countries in the parameters
+            Map<String, String> list = OneyConstants.listCountry();
+
             if (codePays == null) {
                 errors.put(COUNTRY_CODE_KEY, this.i18n.getMessage(COUNTRY_CODE_MESSAGE_ERROR, locale));
                 return errors;
+            } else if (!list.containsKey(codePays)) {
+                errors.put(COUNTRY_CODE_KEY, this.i18n.getMessage(COUNTRY_NOT_IN_LIST, locale));
+                return errors;
+                // transform SP to an iso code ES
+            } else if (list.containsKey(codePays) && codePays.equals("SP")) {
+                codePays = list.get("ES");
+                // codePays must be an ISO code at the end
             } else if (!PluginUtils.isISO3166(codePays)) {
                 errors.put(COUNTRY_CODE_KEY, this.i18n.getMessage(COUNTRY_NOT_ISO, locale));
                 return errors;
@@ -211,6 +215,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
             String jsonMsg = getFinalJsonMessage(pspId, merchantGuid, opcKey, codePays);
             Map<String, String> parameters = PluginUtils.getParametersMap(contractParametersCheckRequest);
             StringResponse stringResponse;
+            final OneyHttpClient httpClient = getNewHttpClientInstance(contractParametersCheckRequest);
             if (Boolean.valueOf(ConfigPropertiesEnum.INSTANCE.get(CHIFFREMENT_IS_ACTIVE))) {
                 OneyEncryptedRequest requestEncrypted = OneyEncryptedRequest.fromJson(jsonMsg, contractParametersCheckRequest);
                 stringResponse = httpClient.initiateCheckPayment(requestEncrypted.toString(), parameters, isSandbox);
@@ -317,5 +322,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     public String getName(Locale locale) {
 
         return this.i18n.getMessage(ConfigurationConstants.PAYMENT_METHOD_NAME, locale);
+    }
+
+    protected OneyHttpClient getNewHttpClientInstance(final ContractParametersCheckRequest contractParametersCheckRequest) {
+        return OneyHttpClient.getInstance(contractParametersCheckRequest.getPartnerConfiguration());
     }
 }

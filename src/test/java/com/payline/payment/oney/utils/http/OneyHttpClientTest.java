@@ -4,10 +4,15 @@ import com.payline.payment.oney.bean.common.PurchaseCancel;
 import com.payline.payment.oney.bean.request.OneyRefundRequest;
 import com.payline.payment.oney.bean.request.OneyTransactionStatusRequest;
 import com.payline.payment.oney.utils.OneyConstants;
+import com.payline.payment.oney.utils.PluginUtils;
+import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.Configurable;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicStatusLine;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +22,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.reflect.Whitebox;
 
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +31,7 @@ import java.util.Map;
 import static com.payline.payment.oney.utils.OneyConstants.PARTNER_API_URL;
 import static com.payline.payment.oney.utils.TestUtils.createStringResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @PrepareForTest(AbstractHttpClient.class)
@@ -32,28 +40,38 @@ public class OneyHttpClientTest {
 
     //ToDO  mock http call, not mocked now to check if they work
     @Spy
-    OneyHttpClient testedClient;
-
     @InjectMocks
-    OneyHttpClient client;
+    OneyHttpClient testedClient;
 
     @Mock
     CloseableHttpClient closableClient;
 
-
     private Map<String, String> params;
     private Map<String, String> urlParams;
+    private static HashMap<String, String> partnerConfigurationMap;
+    private static RequestConfig requestConfig;
+
 
     @BeforeEach
     public void setup() {
-        testedClient = OneyHttpClient.getInstance();
+        partnerConfigurationMap = new HashMap<>();
+        partnerConfigurationMap.put(OneyHttpClient.KEY_CONNECT_TIMEOUT,"2000");
+        partnerConfigurationMap.put(OneyHttpClient.CONNECTION_REQUEST_TIMEOUT,"3000");
+        partnerConfigurationMap.put(OneyHttpClient.READ_SOCKET_TIMEOUT,"4000");
+
+        requestConfig = RequestConfig.custom()
+                .setConnectTimeout(2000)
+                .setConnectionRequestTimeout(3000)
+                .setSocketTimeout(4000).build();
+
+        testedClient = OneyHttpClient.getInstance(new PartnerConfiguration(partnerConfigurationMap, new HashMap<>()));
         MockitoAnnotations.initMocks(this);
-        Whitebox.setInternalState(client, "client", closableClient);
+        Whitebox.setInternalState(testedClient, "client", closableClient);
 
         params = new HashMap<>();
         params.put("psp_guid", "6ba2a5e2-df17-4ad7-8406-6a9fc488a60a");
         params.put("merchant_guid", "9813e3ff-c365-43f2-8dca-94b850befbf9");
-        params.put("reference", OneyConstants.EXTERNAL_REFERENCE_TYPE + OneyConstants.PIPE + "455454545415451198a");
+        params.put("reference", URLEncoder.encode(PluginUtils.fullPurchaseReference("455454545415451198a")));
         params.put(PARTNER_API_URL, "https://oney-staging.azure-api.net");
 
         urlParams = new HashMap<>();
@@ -70,10 +88,10 @@ public class OneyHttpClientTest {
         Mockito.when(httpResponse.getEntity()).thenReturn(entity);
         Mockito.doReturn(httpResponse).when(closableClient).execute(Mockito.any());
 
-        StringResponse response = client.doGet("/staging/payments/v1/purchase/", params, urlParams);
+        StringResponse response = testedClient.doGet("/staging/payments/v1/purchase/", params, urlParams);
 
         //Assert we have a response
-        Assertions.assertNotNull(response);
+        assertNotNull(response);
         assertEquals(200, response.getCode());
 
     }
@@ -91,10 +109,10 @@ public class OneyHttpClientTest {
         Mockito.when(httpResponse.getEntity()).thenReturn(entity);
         Mockito.doReturn(httpResponse).when(closableClient).execute(Mockito.any());
 
-        StringResponse response = client.doPost(path, requestContent, params);
+        StringResponse response = testedClient.doPost(path, requestContent, params);
 
         //Assert we have a response
-        Assertions.assertNotNull(response);
+        assertNotNull(response);
         assertEquals(400, response.getCode());
 
     }
@@ -139,14 +157,15 @@ public class OneyHttpClientTest {
                 .withLanguageCode("FR")
                 .withMerchantGuid("9813e3ff-c365-43f2-8dca-94b850befbf9")
                 .withPspGuid("6ba2a5e2-df17-4ad7-8406-6a9fc488a60a")
-                .withPurchaseReference(OneyConstants.EXTERNAL_REFERENCE_TYPE + OneyConstants.PIPE + "455454545415451198114")
+                .withPurchaseReference(PluginUtils.fullPurchaseReference("455454545415451198114"))
                 .withEncryptKey("66s581CG5W+RLEqZHAGQx+vskjy660Kt8x8rhtRpXtY=")
                 .withCallParameters(params)
                 .build();
 
-        Assertions.assertNotNull(request);
+        assertNotNull(request);
         StringResponse transactStatus = testedClient.initiateGetTransactionStatus(request, true);
-        Assertions.assertNotNull(transactStatus.getCode());
+
+        assertEquals(200,transactStatus.getCode());
     }
 
 
@@ -165,7 +184,7 @@ public class OneyHttpClientTest {
                 .withMerchantGuid("9813e3ff-c365-43f2-8dca-94b850befbf9")
                 .withMerchantRequestId(merchantReqId)
                 .withPspGuid("6ba2a5e2-df17-4ad7-8406-6a9fc488a60a")
-                .withPurchaseReference(OneyConstants.EXTERNAL_REFERENCE_TYPE + OneyConstants.PIPE + "455454545415451198119")
+                .withPurchaseReference(PluginUtils.fullPurchaseReference("455454545415451198119"))
                 .withEncryptKey("66s581CG5W+RLEqZHAGQx+vskjy660Kt8x8rhtRpXtY=")
                 .withPurchase(PurchaseCancel.Builder.aPurchaseCancelBuilder()
                         .withReasonCode(1)
@@ -175,10 +194,11 @@ public class OneyHttpClientTest {
                 .withCallParameters(params)
                 .build();
 
-        Assertions.assertNotNull(request);
+        assertNotNull(request);
         StringResponse transactStatus = testedClient.initiateRefundPayment(request, true);
-        Assertions.assertNotNull(transactStatus.getCode());
-        Assertions.assertNotNull(transactStatus.getContent());
+
+        assertEquals(200,transactStatus.getCode());
+        assertNotNull(transactStatus.getContent());
     }
 
     @Test
@@ -192,5 +212,66 @@ public class OneyHttpClientTest {
         String finalPath = testedClient.finalPath( "/path", false );
         assertEquals( "/path", finalPath );
     }
+
+
+    @Test
+    public void testWithNoPoolMaxSize() throws Exception {
+        getHttpClient("30000", "30000", "3", null, "400000");
+    }
+
+    @Test
+    public void testWithEmptyPoolMaxSize() throws Exception {
+        getHttpClient("30000", "30000", "3", "", "400000");
+    }
+
+
+    @Test
+    public void testWithNoPoolValidation() throws Exception{
+        getHttpClient("30000", "30000", "3", "360000", null);
+    }
+
+    @Test
+    public void testWithEmptyPoolValidation() throws Exception {
+        getHttpClient(null, null,null,null,"");
+    }
+
+    @Test
+    public void testWithAllOptions() throws Exception {
+        getHttpClient("30000", "30000", "3", "360000", "400000");
+    }
+
+    @Test
+    public void testWithEmptyOptions() throws Exception {
+        getHttpClient("", "", "", "", "");
+    }
+
+
+    private void getHttpClient(final String connectionTimeToLive, final String evictIdleConnectionTimeout, final String keepAliveDuration,
+                               final String poolMaxSize, final String poolValidate) throws IOException {
+        HashMap<String, String> partnerMapTest = getParametersMap(connectionTimeToLive, evictIdleConnectionTimeout, keepAliveDuration,
+                poolMaxSize, poolValidate);
+        final PartnerConfiguration partnerConfiguration = new PartnerConfiguration(partnerMapTest, new HashMap<>());
+        HttpClientBuilder builder = testedClient.getHttpClientBuilder(partnerConfiguration, requestConfig);
+        assertNotNull(builder);
+        try (CloseableHttpClient httpClient = builder.build()){
+            RequestConfig requestConfig = ((Configurable) httpClient).getConfig();
+            assertEquals(4000, requestConfig.getSocketTimeout());
+            assertEquals(3000, requestConfig.getConnectionRequestTimeout());
+            assertEquals(2000, requestConfig.getConnectTimeout());
+        }
+
+    }
+
+
+    private HashMap<String, String> getParametersMap(final String connectionTimeToLive, final String evictIdleConnectionTimeout, final String keepAliveDuration, final String poolMaxSize, final String poolValidate) {
+        HashMap<String, String> partnerMapTest = new HashMap<>(partnerConfigurationMap);
+        partnerMapTest.put(OneyHttpClient.CONNECTION_TIME_TO_LIVE, connectionTimeToLive);
+        partnerMapTest.put(OneyHttpClient.EVICT_IDLE_CONNECTION_TIMEOUT, evictIdleConnectionTimeout);
+        partnerMapTest.put(OneyHttpClient.KEEP_ALIVE_DURATION, keepAliveDuration);
+        partnerMapTest.put(OneyHttpClient.POOL_MAX_SIZE_PER_ROUTE, poolMaxSize);
+        partnerMapTest.put(OneyHttpClient.POOL_VALIDATE_CONN_AFTER_INACTIVITY, poolValidate);
+        return partnerMapTest;
+    }
+
 
 }

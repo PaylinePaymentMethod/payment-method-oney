@@ -8,33 +8,46 @@ import com.payline.pmapi.bean.capture.request.CaptureRequest;
 import com.payline.pmapi.bean.capture.response.CaptureResponse;
 import com.payline.pmapi.bean.capture.response.impl.CaptureResponseFailure;
 import com.payline.pmapi.bean.capture.response.impl.CaptureResponseSuccess;
+import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.service.CaptureService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.payline.payment.oney.utils.TestUtils.createStringResponse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doReturn;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CaptureServiceImplTest {
 
-    @InjectMocks
-    CaptureService service;
-
-    @Spy
+    @Mock
     OneyHttpClient client;
 
-    @BeforeAll
-    public void setup() {
-        service = new CaptureServiceImpl();
+    @Spy
+    @InjectMocks
+    CaptureServiceImpl service;
+
+    @BeforeEach
+    public void beforeEach() {
+        final Map<String, String> partnerConfigurationMap = new HashMap<>();
+        partnerConfigurationMap.put(OneyHttpClient.KEY_CONNECT_TIMEOUT,"2000");
+        partnerConfigurationMap.put(OneyHttpClient.CONNECTION_REQUEST_TIMEOUT,"3000");
+        partnerConfigurationMap.put(OneyHttpClient.READ_SOCKET_TIMEOUT,"4000");
+        client = OneyHttpClient.getInstance(new PartnerConfiguration(partnerConfigurationMap, new HashMap<>()));
         MockitoAnnotations.initMocks(this);
+        doReturn(client).when(service).getNewHttpClientInstance(any());
     }
 
     @Test
@@ -42,8 +55,8 @@ public class CaptureServiceImplTest {
         StringResponse responseMockedGet = createStringResponse(200, "OK", "{\"purchase\":{\"status_code\":\"FAVORABLE\",\"status_label\":\"a label\"}}");
         StringResponse responseMockedConfirm = createStringResponse(200, "OK", "{\"purchase\":{\"status_code\":\"FUNDED\",\"status_label\":\"a label\"}}");
 
-        Mockito.doReturn(responseMockedGet).when(client).initiateGetTransactionStatus(any(), anyBoolean());
-        Mockito.doReturn(responseMockedConfirm).when(client).initiateConfirmationPayment(any(), anyBoolean());
+        doReturn(responseMockedGet).when(client).initiateGetTransactionStatus(any(), anyBoolean());
+        doReturn(responseMockedConfirm).when(client).initiateConfirmationPayment(any(), anyBoolean());
 
         CaptureRequest request = TestUtils.createDefaultCaptureRequest();
 
@@ -55,8 +68,8 @@ public class CaptureServiceImplTest {
     void captureRequestError() throws Exception{
         StringResponse responseMocked = createStringResponse(200, "OK", "{\"purchase\":{\"status_code\":\"REFUSED\",\"status_label\":\"a label\"}}");
 
-        Mockito.doReturn(responseMocked).when(client).initiateGetTransactionStatus(any(), anyBoolean());
-        Mockito.doReturn(responseMocked).when(client).initiateConfirmationPayment(any(), anyBoolean());
+        doReturn(responseMocked).when(client).initiateGetTransactionStatus(any(), anyBoolean());
+        doReturn(responseMocked).when(client).initiateConfirmationPayment(any(), anyBoolean());
 
         CaptureRequest request = TestUtils.createDefaultCaptureRequest();
 

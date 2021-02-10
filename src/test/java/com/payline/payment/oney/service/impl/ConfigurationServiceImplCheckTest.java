@@ -11,6 +11,7 @@ import com.payline.pmapi.bean.payment.ContractProperty;
 import com.payline.pmapi.bean.payment.Environment;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -21,7 +22,9 @@ import java.util.Map;
 
 import static com.payline.payment.oney.utils.OneyConstants.*;
 import static com.payline.payment.oney.utils.TestUtils.createStringResponse;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doReturn;
 
 /**
  * Validates the {@link ConfigurationServiceImpl#check(ContractParametersCheckRequest)} method.
@@ -29,11 +32,12 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ConfigurationServiceImplCheckTest {
 
-    @InjectMocks
-    private ConfigurationServiceImpl service;
+    @Mock
+    OneyHttpClient httpClient;
 
     @Spy
-    OneyHttpClient httpClient;
+    @InjectMocks
+    private ConfigurationServiceImpl service;
 
     private Environment environment;
     private Map<String, ContractProperty> contractProperties;
@@ -42,9 +46,6 @@ public class ConfigurationServiceImplCheckTest {
 
     @BeforeAll
     public void setUpAll() throws HttpCallException {
-        this.service = new ConfigurationServiceImpl();
-        MockitoAnnotations.initMocks(this);
-
         // Mock environment
         this.environment = new Environment(
                 "http://google.com/",
@@ -53,13 +54,10 @@ public class ConfigurationServiceImplCheckTest {
                 true
         );
 
-        // Mock HTTP call to the partner API.
-        StringResponse mockResponsePending = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ul3aakmok0anPtpBvW1vZ3e83c7evaIMgKsuqlJpPjg407AoMkFm94736cZcnpC81qiX4V8n9IxMD1E50QBAOkMZ1S8Pf90kxhXSDe3wt4J13\"}");
-        Mockito.doReturn(mockResponsePending).when(httpClient).initiateCheckPayment(Mockito.anyString(), Mockito.anyMap(), anyBoolean());
     }
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() throws Exception {
         // Mock full contract properties
         contractProperties = new HashMap<>();
         contractProperties.put(MERCHANT_GUID_KEY, new ContractProperty("merchant_guid_test"));
@@ -78,10 +76,29 @@ public class ConfigurationServiceImplCheckTest {
 
         // Mock sensitive partner configuration
         sensitivePartnerConfiguration = new HashMap<>();
+        MockitoAnnotations.initMocks(this);
+        doReturn(httpClient).when(service).getNewHttpClientInstance(any(ContractParametersCheckRequest.class));
+
+        // Mock HTTP call to the partner API.
+        StringResponse mockResponsePending = createStringResponse(200, "OK", "{\"encrypted_message\":\"+l2i0o7hGRh+wJO02++ul3aakmok0anPtpBvW1vZ3e83c7evaIMgKsuqlJpPjg407AoMkFm94736cZcnpC81qiX4V8n9IxMD1E50QBAOkMZ1S8Pf90kxhXSDe3wt4J13\"}");
+        doReturn(mockResponsePending).when(httpClient).initiateCheckPayment(Mockito.anyString(), Mockito.anyMap(), anyBoolean());
     }
 
     @Test
-    public void check_ok(){
+    public void check_okISOCountry(){
+        // when: calling check method
+        Map<String, String> errors = service.check( this.createContractParametersCheckRequest() );
+
+        // then: no error
+        Assertions.assertEquals(0, errors.size());
+    }
+
+    @Test
+    public void check_okNonISOCountryCodeInList(){
+        // put a non ISO country Code, accepted in the list of countries
+        contractProperties.put(COUNTRY_CODE_KEY, new ContractProperty("SP"));
+        partnerConfiguration.put(PSP_GUID_KEY + ".sp", "psp_id_test");
+        partnerConfiguration.put(PARTNER_AUTHORIZATION_KEY + ".sp", "mykey");
         // when: calling check method
         Map<String, String> errors = service.check( this.createContractParametersCheckRequest() );
 

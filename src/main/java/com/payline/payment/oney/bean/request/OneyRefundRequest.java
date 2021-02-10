@@ -153,8 +153,15 @@ public class OneyRefundRequest extends ParameterizedUrlOneyRequest {
             return this;
         }
 
-        public OneyRefundRequest build() {
+        public OneyRefundRequest build() throws InvalidDataException {
+            checkIntegrity();
             return new OneyRefundRequest(this);
+        }
+
+        private void checkIntegrity() throws InvalidDataException {
+            if (purchase == null){
+                throw new InvalidDataException("Purchase cannot be null", "purchase");
+            }
         }
 
     }

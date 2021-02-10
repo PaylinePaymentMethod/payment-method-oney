@@ -1,9 +1,9 @@
 package com.payline.payment.oney.service.impl;
 
-import com.payline.payment.oney.utils.OneyConstants;
 import com.payline.payment.oney.utils.http.OneyHttpClient;
 import com.payline.payment.oney.utils.http.StringResponse;
 import com.payline.pmapi.bean.common.FailureCause;
+import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.bean.reset.request.ResetRequest;
 import com.payline.pmapi.bean.reset.response.ResetResponse;
 import com.payline.pmapi.bean.reset.response.impl.ResetResponseFailure;
@@ -16,8 +16,14 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.payline.payment.oney.bean.common.PurchaseStatus.StatusCode.CANCELLED;
 import static com.payline.payment.oney.utils.TestUtils.createDefaultResetRequest;
 import static com.payline.payment.oney.utils.TestUtils.createStringResponse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 
 public class ResetServiceImplTest {
     private String responseOK = "{\"purchase\":{\"status_code\":\"CANCELLED\",\"status_label\":\"Transaction is completed\"}}";
@@ -25,15 +31,24 @@ public class ResetServiceImplTest {
     private String responseKOCiphered = "{\"encrypted_message\":\"ymDHJ7HBRe49whKjH1HDtA==\"}";
 
     @InjectMocks
-    public ResetServiceImpl service;
+    @Spy
+    ResetServiceImpl service;
 
     @Spy
     OneyHttpClient httpClient;
 
     @BeforeEach
     public void setup() {
+        final Map<String, String> partnerConfigurationMap = new HashMap<>();
+        partnerConfigurationMap.put(OneyHttpClient.KEY_CONNECT_TIMEOUT,"2000");
+        partnerConfigurationMap.put(OneyHttpClient.CONNECTION_REQUEST_TIMEOUT,"3000");
+        partnerConfigurationMap.put(OneyHttpClient.READ_SOCKET_TIMEOUT,"4000");
+
+        httpClient = OneyHttpClient.getInstance(new PartnerConfiguration(partnerConfigurationMap, new HashMap<>()));
+
         service = new ResetServiceImpl();
         MockitoAnnotations.initMocks(this);
+        doReturn(httpClient).when(service).getNewHttpClientInstance(any());
     }
 
 
@@ -49,7 +64,7 @@ public class ResetServiceImplTest {
 
         Assertions.assertEquals(ResetResponseSuccess.class, response.getClass());
         ResetResponseSuccess success = (ResetResponseSuccess) response;
-        Assertions.assertEquals("CANCELLED", success.getStatusCode());
+        Assertions.assertEquals(CANCELLED.name(), success.getStatusCode());
         Assertions.assertNotNull(success.getPartnerTransactionId());
     }
 
@@ -67,6 +82,6 @@ public class ResetServiceImplTest {
         Assertions.assertSame(response.getClass(), ResetResponseFailure.class);
         ResetResponseFailure fail = (ResetResponseFailure) response;
         Assertions.assertEquals(FailureCause.REFUSED, fail.getFailureCause());
-        Assertions.assertEquals(OneyConstants.EXTERNAL_REFERENCE_TYPE + OneyConstants.PIPE + resetReq.getOrder().getReference(), fail.getPartnerTransactionId());
+        Assertions.assertEquals(resetReq.getOrder().getReference(), fail.getPartnerTransactionId());
     }
 }

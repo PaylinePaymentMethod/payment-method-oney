@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class OneyResponse extends OneyBean {
 
-    private static final Logger LOGGER = LogManager.getLogger(OneyRequest.class);
+    private static final Logger LOGGER = LogManager.getLogger(OneyResponse.class);
 
     @SerializedName("encrypted_message")
     protected String encryptedMessage;

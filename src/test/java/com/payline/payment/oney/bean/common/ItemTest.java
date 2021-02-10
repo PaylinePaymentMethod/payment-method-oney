@@ -56,7 +56,7 @@ public class ItemTest {
     public void testToString() throws Exception {
         item = Item.Builder.aItemBuilder()
                 .fromPayline(createOrderItem("someRefe", createAmount(CURRENCY)))
-                .withTravel(new Travel())
+                .withTravel(new Travel.TravelBuilder().build())
                 .build();
 
         Assertions.assertTrue(item.toString().contains("is_main_item"));

@@ -19,8 +19,6 @@ import java.util.Map;
 
 public interface RequestConfigService {
 
-    String DOT = ".";
-
     /**
      * Use PARAMETERS_MAP to read a property in ContractConfiguration or in PartnerConfiguration.
      *
@@ -152,7 +150,7 @@ public interface RequestConfigService {
             throw new InvalidDataException("Extention not found for partner configuration key " + key, key);
         }
 
-        String realKey = key + DOT + ext.toLowerCase();
+        String realKey = key + "." + ext.toLowerCase();
         return partnerConfiguration.getProperty(realKey);
     }
 

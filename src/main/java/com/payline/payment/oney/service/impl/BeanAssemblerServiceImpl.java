@@ -289,7 +289,6 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
 
             // Item list
             List<Order.OrderItem> orderItems = paymentRequest.getOrder().getItems();
-            purchaseBuilder.withNumberOfItems(orderItems.size());
             List<Item> listItems = new ArrayList<>();
 
             // Travel item (same for each item : see PAYLAPMEXT-153).
@@ -299,15 +298,18 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
                 travel = this.assembleTravel( order );
             }
 
+            int numberOfItems = 0;
             for (Order.OrderItem item : orderItems) {
                 // new Item
+                final int itemQuantity = item.getQuantity().intValue();
                 Item.Builder itemBuilder = Item.Builder.aItemBuilder()
                         .withMainItem(0)
                         .withCategoryCode(CategoryCodeHandler.findCategory(item.getCategory()))
                         .withLabel(item.getComment()) //or get Brand +" "+ get comment ?
                         .withItemExternalCode(item.getReference())
-                        .withQuantity(item.getQuantity().intValue())
+                        .withQuantity(itemQuantity)
                         .withPrice(createFloatAmount(item.getAmount().getAmountInSmallestUnit(), item.getAmount().getCurrency()));
+                numberOfItems += itemQuantity;
 
                 // Travel
                 itemBuilder.withTravel( travel );
@@ -322,6 +324,7 @@ public class BeanAssemblerServiceImpl implements BeanAssembleService {
 
                 listItems.add( itemBuilder.build() );
             }
+            purchaseBuilder.withNumberOfItems(numberOfItems);
 
             // add delivery fee as an item if needed (see PAYLAPMEXT-238)
             Amount deliveryCharge = order.getDeliveryCharge();

@@ -121,6 +121,7 @@ class BeanAssemblerServiceImplTest {
         Assertions.assertNotNull(purchase.getListItem());
         Assertions.assertFalse(purchase.getListItem().isEmpty());
         Assertions.assertNotNull(purchase.getListItem().get(2));
+        Assertions.assertEquals(8, purchase.getNumberOfItems());
         Item item = purchase.getListItem().get(2);
         Assertions.assertEquals(11, item.getCategoryCode().intValue());
         Assertions.assertEquals(0, item.getIsMainItem().intValue());

@@ -439,6 +439,7 @@ public class TestUtils {
                 .withOrder(createCompleteOrder(TRANSACTION_ID))
                 .withBuyer(createDefaultBuyer())
                 .withPartnerConfiguration(createDefaultPartnerConfiguration())
+                .withCaptureNow(true)
                 .build();
     }
 

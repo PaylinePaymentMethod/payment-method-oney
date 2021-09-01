@@ -2,9 +2,9 @@ import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "5.1.0"
-    id "org.sonarqube" version "2.6.1"
-    id "org.owasp.dependencycheck" version "6.1.0"
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+    id "org.sonarqube" version "3.3"
+    id "org.owasp.dependencycheck" version "6.2.2"
 }
 
 apply plugin: 'maven'
@@ -23,7 +23,7 @@ if (file(externalFileName).exists()) {
 
 description = 'payment-method-oney'
 group = 'com.payline.payment.oney'
-version = '1.9'
+version = '2.0'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -33,7 +33,7 @@ compileJava.options.encoding = 'UTF-8'
 ext {
     paymentMethodApiVersion = '1.14'
     paymentMethodIntegrationVersion = '1.4'
-    mockitoVersion = '2.19.0'
+    mockitoVersion = '3.12.4'
     releaseDirectoryPath = 'D:/build'
 }
 
@@ -44,11 +44,11 @@ configurations {
 dependencies {
     compileOnly("com.payline:payment-method-api:$paymentMethodApiVersion")
 
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.3'
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.1'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.8'
 
-    implementation group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13'
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.6'
+    implementation group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.14'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
 
     compileOnly group: 'javax.xml.ws', name: 'jaxws-api', version: '2.3.1'
     compileOnly group: 'javax.jws', name: 'javax.jws-api', version:  '1.1'
@@ -58,28 +58,21 @@ dependencies {
     testRuntimeOnly group: 'javax.jws', name: 'javax.jws-api', version:  '1.1'
     testRuntimeOnly group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
 
-    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.3'
-    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.3'
+    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.1'
+    testImplementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
 
     testImplementation group: 'org.jmockit', name: 'jmockit', version: '1.49'
 
     testImplementation "com.payline:payment-method-api:${paymentMethodApiVersion}"
-    testImplementation group: 'org.powermock', name: 'powermock-api-mockito2', version: '2.0.7'
+    testImplementation group: 'org.powermock', name: 'powermock-api-mockito2', version: '2.0.9'
 
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.6.2'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.7.0'
 
     testImplementation group: 'org.seleniumhq.selenium', name: 'selenium-server', version: '3.141.59'
     testImplementation group: 'org.seleniumhq.selenium', name: 'selenium-support', version: '3.141.59'
 
-    implementation 'org.apache.commons:commons-lang3:3.11'
-
-    // fatJarTest include testImplementation dependencies (not for IT)
-    fatJarTest group: 'org.powermock', name: 'powermock-api-mockito2', version: '2.0.7'
-    fatJarTest group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.2'
-    fatJarTest group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.6.2'
-    fatJarTest group: 'org.seleniumhq.selenium', name: 'selenium-server', version: '3.141.59'
-    fatJarTest group: 'org.seleniumhq.selenium', name: 'selenium-support', version: '3.141.59'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
 }
 
 dependencyCheck {

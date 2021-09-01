@@ -73,13 +73,6 @@ dependencies {
     testImplementation group: 'org.seleniumhq.selenium', name: 'selenium-support', version: '3.141.59'
 
     implementation 'org.apache.commons:commons-lang3:3.12.0'
-
-    // fatJarTest include testImplementation dependencies (not for IT)
-    fatJarTest group: 'org.powermock', name: 'powermock-api-mockito2', version: '2.0.9'
-    fatJarTest group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.2'
-    fatJarTest group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.7.2'
-    fatJarTest group: 'org.seleniumhq.selenium', name: 'selenium-server', version: '3.141.59'
-    fatJarTest group: 'org.seleniumhq.selenium', name: 'selenium-support', version: '3.141.59'
 }
 
 dependencyCheck {

@@ -1,5 +1,7 @@
 package com.payline.payment.oney.service.impl;
 
+import com.payline.payment.oney.bean.common.PurchaseStatus;
+import com.payline.payment.oney.exception.PluginTechnicalException;
 import com.payline.payment.oney.utils.OneyConfigBean;
 import com.payline.payment.oney.utils.TestUtils;
 import com.payline.payment.oney.utils.http.OneyHttpClient;
@@ -8,42 +10,31 @@ import com.payline.pmapi.bean.common.FailureCause;
 import com.payline.pmapi.bean.common.FailureTransactionStatus;
 import com.payline.pmapi.bean.common.OnHoldTransactionStatus;
 import com.payline.pmapi.bean.common.SuccessTransactionStatus;
-import com.payline.pmapi.bean.configuration.PartnerConfiguration;
-import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
 import com.payline.pmapi.bean.notification.request.NotificationRequest;
 import com.payline.pmapi.bean.notification.response.NotificationResponse;
-import com.payline.pmapi.bean.notification.response.impl.IgnoreNotificationResponse;
 import com.payline.pmapi.bean.notification.response.impl.PaymentResponseByNotificationResponse;
 import com.payline.pmapi.bean.notification.response.impl.TransactionStateChangedResponse;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseFailure;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseOnHold;
 import com.payline.pmapi.bean.payment.response.impl.PaymentResponseSuccess;
-import com.payline.pmapi.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
+import org.mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.payline.payment.oney.utils.TestUtils.createStringResponse;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class NotificationServiceTest extends OneyConfigBean {
@@ -70,6 +61,7 @@ public class NotificationServiceTest extends OneyConfigBean {
 
         MockitoAnnotations.initMocks(this);
         doReturn(client).when(service).getNewHttpClientInstance(any(NotificationRequest.class));
+        lenient().doNothing().when(service).sleep(anyLong());
     }
 
     private static Stream<Arguments> parse_nonExistingTransaction_set() {
@@ -315,8 +307,9 @@ public class NotificationServiceTest extends OneyConfigBean {
         assertNotNull(responseFailure.getFailureCause());
     }
 
-    @Test
-    void parse_statusAttemptsAfterConfirmation() throws Exception {
+    @ParameterizedTest
+    @EnumSource(value = PurchaseStatus.StatusCode.class, names = {"FUNDED", "TO_BE_FUNDED"})
+    void parse_statusAttemptsAfterConfirmation(final PurchaseStatus.StatusCode finalStatusCode) throws Exception {
         // given a payment with FAVORABLE status...
         NotificationRequest request = requestBuilder
                 .withContent(new ByteArrayInputStream(mockContent("FAVORABLE").getBytes()))
@@ -326,17 +319,38 @@ public class NotificationServiceTest extends OneyConfigBean {
         doReturn(responseMockedConfirm).when(client).initiateConfirmationPayment(any(), anyBoolean());
         // ... the first 2 status responses return FAVORABLE, the third returns FUNDED
         StringResponse favorableResponse = createStringResponse(200, "OK", "{\"purchase\":{\"status_code\":\"FAVORABLE\",\"status_label\":\"a label\"}}");
-        StringResponse fundedResponse = createStringResponse(200, "OK", "{\"purchase\":{\"status_code\":\"FUNDED\",\"status_label\":\"a label\"}}");
+        StringResponse fundedResponse = createStringResponse(200, "OK", String.format("{\"purchase\":{\"status_code\":\"%s\",\"status_label\":\"a label\"}}", finalStatusCode.name()));
 
         doReturn(favorableResponse, favorableResponse, fundedResponse)
                 .when(client).initiateGetTransactionStatus(any(), anyBoolean());
 
         NotificationResponse response = service.parse(request);
+
+        verify(service).sleep(3);
+        verify(service).sleep(6);
+        verify(service).sleep(12);
+        verify(service, times(0)).sleep(24);
         assertTrue( response instanceof PaymentResponseByNotificationResponse );
         PaymentResponseByNotificationResponse paymentResponseByNotificationResponse = (PaymentResponseByNotificationResponse) response;
         assertEquals(PaymentResponseSuccess.class, paymentResponseByNotificationResponse.getPaymentResponse().getClass());
     }
 
+    @Test
+    void returnOnHoldResponseWhenStatusIsFavorableThenPending() throws PluginTechnicalException {
+        final NotificationRequest request = requestBuilder
+                .withContent(new ByteArrayInputStream(mockContent("FAVORABLE").getBytes()))
+                .build();
+
+        doReturn(PurchaseStatus.StatusCode.PENDING).when(service).confirmAndCheck(eq(request), any());
+
+        final NotificationResponse response = service.parse(request);
+
+        assertTrue(response instanceof PaymentResponseByNotificationResponse);
+        final PaymentResponseByNotificationResponse notificationResponse = (PaymentResponseByNotificationResponse) response;
+        assertTrue(notificationResponse.getPaymentResponse() instanceof PaymentResponseOnHold);
+        final PaymentResponseOnHold paymentResponse = (PaymentResponseOnHold) notificationResponse.getPaymentResponse();
+        assertEquals("987654321", paymentResponse.getPartnerTransactionId());
+    }
 
     private String mockContent( String statusCode ){
         String content = "{" +

@@ -43,6 +43,7 @@ import static com.payline.payment.oney.utils.OneyConstants.HTTP_OK;
 public class NotificationServiceImpl implements NotificationService {
     private static final Logger LOGGER = LogManager.getLogger(NotificationServiceImpl.class);
 
+    private static final long[] RETRY_INTERVAL_DURATION = {3, 6, 12, 24};
     @Override
     public NotificationResponse parse(NotificationRequest request) {
         NotificationResponse notificationResponse;
@@ -114,6 +115,8 @@ public class NotificationServiceImpl implements NotificationService {
                         PurchaseStatus.StatusCode status = confirmAndCheck(request, oneyResponse);
                         if (FUNDED.equals(status) || TO_BE_FUNDED.equals(status)) {
                             notificationResponse = notificationResponseHandler.successResponse( oneyResponse, transactionId );
+                        } else if (PENDING.equals(status)) {
+                            notificationResponse = notificationResponseHandler.onHoldResponse(oneyResponse, transactionId);
                         }
                         else {
                             notificationResponse = notificationResponseHandler.failureResponse( oneyResponse, transactionId,
@@ -164,7 +167,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @return the final status of the payment, after confirmation.
      * @throws PluginTechnicalException
      */
-    private PurchaseStatus.StatusCode confirmAndCheck(NotificationRequest request, OneyNotificationResponse oneyResponse) throws PluginTechnicalException {
+    protected PurchaseStatus.StatusCode confirmAndCheck(NotificationRequest request, OneyNotificationResponse oneyResponse) throws PluginTechnicalException {
         final String key = RequestConfigServiceImpl.INSTANCE.getParameterValue(request, OneyConstants.PARTNER_CHIFFREMENT_KEY);
 
         // confirmation
@@ -178,11 +181,11 @@ public class NotificationServiceImpl implements NotificationService {
                 .fromNotificationRequest(request)
                 .withPurchaseReference(PluginUtils.fullPurchaseReference(oneyResponse.getPurchase().getExternalReference()))
                 .build();
-        PurchaseStatus.StatusCode finalStatus = null;
-        int attempts = 0;
-        while( finalStatus == null ) {
+        PurchaseStatus.StatusCode status = null;
+
+        for (final long retryIntervalDuration : RETRY_INTERVAL_DURATION) {
+            sleep(retryIntervalDuration);
             StringResponse checkStatusResponse = httpClient.initiateGetTransactionStatus(oneyTransactionStatusRequest, request.getEnvironment().isSandbox());
-            attempts++;
 
             // verify the response integrity and HTTP status
             if (checkStatusResponse.getContent() == null) {
@@ -205,24 +208,23 @@ public class NotificationServiceImpl implements NotificationService {
                 throw new HttpCallException(message, "empty check response object or statusCode");
             }
 
-            // Retry every 3s until the payment status equals FUNDED or TO_BE_FUNDED (3 times max)
-            PurchaseStatus.StatusCode currentStatus = statusResponseResponse.getStatusPurchase().getStatusCode();
-            if( attempts == 3 || FUNDED.equals( currentStatus ) || TO_BE_FUNDED.equals( currentStatus ) ){
-                finalStatus = currentStatus;
-            }
-            else {
-                // if it was not the third attempt, wait for 3s before the next one
-                try {
-                    Thread.sleep(3000);
-                }
-                catch (InterruptedException e) {
-                    LOGGER.error("The thread has been interrupted. Shutting down the thread cleanly..." );
-                    Thread.currentThread().interrupt();
-                }
+            // Retry a few times to check if the payment status equals FUNDED or TO_BE_FUNDED (see RETRY_INTERVAL_DURATION)
+            status = statusResponseResponse.getStatusPurchase().getStatusCode();
+            if (FUNDED.equals(status) || TO_BE_FUNDED.equals(status)) {
+                break;
             }
         }
 
-        return finalStatus;
+        return status;
+    }
+
+    protected void sleep(final long seconds) {
+        try {
+            Thread.sleep(seconds * 1000);
+        } catch (InterruptedException e) {
+            LOGGER.error("The thread has been interrupted. Shutting down the thread cleanly..." );
+            Thread.currentThread().interrupt();
+        }
     }
 
 

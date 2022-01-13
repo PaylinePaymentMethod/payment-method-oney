@@ -23,7 +23,7 @@ if (file(externalFileName).exists()) {
 
 description = 'payment-method-oney'
 group = 'com.payline.payment.oney'
-version = '2.3'
+version = '2.4-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

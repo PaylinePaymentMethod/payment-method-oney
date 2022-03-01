@@ -69,8 +69,6 @@ pipeline {
                         }
                     }
                     post {
-                        failure {
-                        }
                         success {
                             step([$class: 'JiraIssueUpdater', issueSelector: [$class: 'DefaultIssueSelector'], scm: scm])
                         }

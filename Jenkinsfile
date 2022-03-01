@@ -88,10 +88,6 @@ pipeline {
                             }
                         }
                     }
-                    post {
-                        failure {
-                        }
-                    }
                 }
             }
         }

@@ -5,6 +5,7 @@ import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.bean.configuration.ReleaseInformation;
 import com.payline.pmapi.bean.configuration.parameter.AbstractParameter;
 import com.payline.pmapi.bean.configuration.parameter.impl.InputParameter;
+import com.payline.pmapi.bean.configuration.parameter.impl.ListBoxParameter;
 import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,6 +24,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import static com.payline.payment.oney.utils.OneyConstants.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
@@ -107,7 +110,16 @@ public class ConfigurationServiceImplTest {
         List<AbstractParameter> parameters = service.getParameters(Locale.FRANCE);
         //Assert we have 3 parameters
         Assertions.assertNotNull(parameters);
-        Assertions.assertEquals(7, parameters.size());
+        assertEquals(7, parameters.size());
+        final AbstractParameter abstractParameter = parameters.get(2);
+        assertTrue(abstractParameter instanceof ListBoxParameter);
+        final ListBoxParameter nbEcheancesParameter = (ListBoxParameter) abstractParameter;
+        assertEquals("3x", nbEcheancesParameter.getList().get("3x"));
+        assertEquals("4x", nbEcheancesParameter.getList().get("4x"));
+        assertEquals("6x", nbEcheancesParameter.getList().get("6x"));
+        assertEquals("10x", nbEcheancesParameter.getList().get("10x"));
+        assertEquals("12x", nbEcheancesParameter.getList().get("12x"));
+        assertEquals("BNPL", nbEcheancesParameter.getList().get("BNPL"));
 
         List<String> result = new ArrayList<>();
         for (AbstractParameter paramter : parameters) {

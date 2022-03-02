@@ -34,9 +34,9 @@ publishing {
         maven {
             afterEvaluate {
                 if (project.version.endsWith('-SNAPSHOT')) {
-                    url nexusSnapshotUrl
+                    url "https://nexus.intra.monext.fr:10130/nexus/content/repositories/jindus-repo-pay-pay-snapshot/"
                 } else {
-                    url nexusPublicUrl
+                    url "https://nexus.intra.monext.fr:10130/nexus/content/repositories/jindus-repo-pay-pay-public/"
                 }
                 credentials {
                     username mavenUser

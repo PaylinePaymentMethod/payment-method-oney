@@ -5,6 +5,7 @@ import com.payline.payment.oney.bean.request.OneyEncryptedRequest;
 import com.payline.payment.oney.exception.DecryptException;
 import com.payline.payment.oney.exception.HttpCallException;
 import com.payline.payment.oney.exception.InvalidDataException;
+import com.payline.payment.oney.exception.PluginException;
 import com.payline.payment.oney.utils.OneyCheckConstants;
 import com.payline.payment.oney.utils.OneyConstants;
 import com.payline.payment.oney.utils.PluginUtils;
@@ -20,6 +21,7 @@ import com.payline.pmapi.bean.configuration.parameter.impl.InputParameter;
 import com.payline.pmapi.bean.configuration.parameter.impl.ListBoxParameter;
 import com.payline.pmapi.bean.configuration.parameter.impl.PasswordParameter;
 import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
+import com.payline.pmapi.bean.configuration.request.ContractParametersRequest;
 import com.payline.pmapi.service.ConfigurationService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +41,12 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
     @Override
     public List<AbstractParameter> getParameters(Locale locale) {
+        throw new IllegalStateException("Method not allowed");
+    }
+
+    @Override
+    public List<AbstractParameter> getParameters(final ContractParametersRequest request) {
+        final Locale locale = request.getLocale();
         List<AbstractParameter> parameters = new ArrayList<>();
 
         // merchant GUID
@@ -62,13 +70,14 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         nbEcheancesParameter.setKey(NB_ECHEANCES_KEY);
         nbEcheancesParameter.setLabel(this.i18n.getMessage(NB_ECHEANCES_LABEL, locale));
         nbEcheancesParameter.setRequired(true);
+        final String nbEcheancesContrat = request.getPartnerConfiguration().getProperty(OneyConstants.NB_ECHEANCES_CONTRAT);
+        if (PluginUtils.isEmpty(nbEcheancesContrat)) {
+            throw new PluginException("Unable to deserialize 'nb.echeances.contrat' : partnerconf is not set");
+        }
         final LinkedHashMap<String, String> nbEcheances = new LinkedHashMap<>();
-        nbEcheances.put("3x", "3x");
-        nbEcheances.put("4x", "4x");
-        nbEcheances.put("6x", "6x");
-        nbEcheances.put("10x", "10x");
-        nbEcheances.put("12x", "12x");
-        nbEcheances.put("BNPL", "BNPL");
+        for (final String nbEcheance : nbEcheancesContrat.split(",")) {
+            nbEcheances.put(nbEcheance, nbEcheance);
+        }
         nbEcheancesParameter.setList(nbEcheances);
         parameters.add(nbEcheancesParameter);
 

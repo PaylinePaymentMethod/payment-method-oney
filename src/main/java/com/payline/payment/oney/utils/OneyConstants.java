@@ -71,6 +71,7 @@ public class OneyConstants {
     public static final String PARTNER_AUTHORIZATION_KEY_MESSAGE_ERROR = "partner.oney.access.key.error.message";
     public static final String PARTNER_API_URL = "partner.oney.url";
     public static final String HEADER_COUNTRY_CODE = "oney.coutry.code";
+    public static final String NB_ECHEANCES_CONTRAT = "nb.echeances.contrat";
 
 
     // Request URL's

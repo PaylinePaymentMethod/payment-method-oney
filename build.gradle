@@ -14,7 +14,7 @@ apply from: "monext.gradle"
 
 description = 'payment-method-oney'
 group = 'com.payline.payment.oney'
-version = '2.5-SNAPSHOT'
+version = '2.5'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

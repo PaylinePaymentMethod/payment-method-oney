@@ -9,6 +9,7 @@ import com.payline.pmapi.bean.common.Buyer.Address;
 import com.payline.pmapi.bean.common.SubMerchant;
 import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.bean.configuration.request.ContractParametersCheckRequest;
+import com.payline.pmapi.bean.configuration.request.ContractParametersRequest;
 import com.payline.pmapi.bean.payment.*;
 import com.payline.pmapi.bean.payment.request.PaymentRequest;
 import com.payline.pmapi.bean.payment.request.RedirectionPaymentRequest;
@@ -319,6 +320,7 @@ public class TestUtils {
         partnerConfiguration.put(SECRET_KEY, TestUtils.getSecretKey());
         partnerConfiguration.put(TEST_PARTNER_AUTHORIZATION_KEY, "7fd3f1c53b9a47f7b85c801a32971895");
         partnerConfiguration.put(PARTNER_API_URL, "https://oney-staging.azure-api.net");
+        partnerConfiguration.put(NB_ECHEANCES_CONTRAT, "1x,2x");
 
         return new PartnerConfiguration(partnerConfiguration, new HashMap<>());
     }
@@ -603,4 +605,10 @@ public class TestUtils {
         }
     }
 
+    public static ContractParametersRequest aContractParametersRequest() {
+        return ContractParametersRequest.builder()
+                .locale(Locale.FRANCE)
+                .partnerConfiguration(createDefaultPartnerConfiguration())
+                .build();
+    }
 }

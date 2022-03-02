@@ -1,5 +1,6 @@
 package com.payline.payment.oney.service.impl;
 
+import com.payline.payment.oney.utils.TestUtils;
 import com.payline.payment.oney.utils.http.OneyHttpClient;
 import com.payline.pmapi.bean.configuration.PartnerConfiguration;
 import com.payline.pmapi.bean.configuration.ReleaseInformation;
@@ -43,7 +44,7 @@ public class ConfigurationServiceImplTest {
 
     @Test
     public void testGetParametersKeys() {
-        List<AbstractParameter> parameters = service.getParameters(Locale.FRANCE);
+        List<AbstractParameter> parameters = service.getParameters(TestUtils.aContractParametersRequest());
         Pattern p = Pattern.compile("[a-zA-Z\\.]*");
         for (AbstractParameter param : parameters) {
             Assertions.assertTrue(p.matcher(param.getKey()).matches(), param.getKey() + " comporte des caracteres interdits");
@@ -95,7 +96,7 @@ public class ConfigurationServiceImplTest {
         merchantGuid.setDescription("test");
         merchantGuid.setRequired(true);
 
-        List<AbstractParameter> parameters = service.getParameters(Locale.FRANCE);
+        List<AbstractParameter> parameters = service.getParameters(TestUtils.aContractParametersRequest());
         parameters.add(merchantGuid);
 
         Pattern p = Pattern.compile("[a-zA-Z\\.]*");
@@ -107,19 +108,15 @@ public class ConfigurationServiceImplTest {
 
     @Test
     public void testGetParameters() {
-        List<AbstractParameter> parameters = service.getParameters(Locale.FRANCE);
+        List<AbstractParameter> parameters = service.getParameters(TestUtils.aContractParametersRequest());
         //Assert we have 3 parameters
         Assertions.assertNotNull(parameters);
         assertEquals(7, parameters.size());
         final AbstractParameter abstractParameter = parameters.get(2);
         assertTrue(abstractParameter instanceof ListBoxParameter);
         final ListBoxParameter nbEcheancesParameter = (ListBoxParameter) abstractParameter;
-        assertEquals("3x", nbEcheancesParameter.getList().get("3x"));
-        assertEquals("4x", nbEcheancesParameter.getList().get("4x"));
-        assertEquals("6x", nbEcheancesParameter.getList().get("6x"));
-        assertEquals("10x", nbEcheancesParameter.getList().get("10x"));
-        assertEquals("12x", nbEcheancesParameter.getList().get("12x"));
-        assertEquals("BNPL", nbEcheancesParameter.getList().get("BNPL"));
+        assertEquals("1x", nbEcheancesParameter.getList().get("1x"));
+        assertEquals("2x", nbEcheancesParameter.getList().get("2x"));
 
         List<String> result = new ArrayList<>();
         for (AbstractParameter paramter : parameters) {

@@ -142,6 +142,27 @@ processResources {
     }
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            if (project.version.endsWith('-SNAPSHOT')) {
+                url "https://nexus.intra.monext.fr:10130/nexus/content/repositories/jindus-repo-pay-pay-snapshot/"
+            } else {
+                url "https://nexus.intra.monext.fr:10130/nexus/content/repositories/jindus-repo-pay-pay-public/"
+            }
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+        }
+    }
+}
+
 // To create a JAR including test classes and dependencies
 task testJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
     dependsOn 'shadowJar', 'testClasses'

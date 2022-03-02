@@ -68,6 +68,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         nbEcheances.put("6x", "6x");
         nbEcheances.put("10x", "10x");
         nbEcheances.put("12x", "12x");
+        nbEcheances.put("BNPL", "BNPL");
         nbEcheancesParameter.setList(nbEcheances);
         parameters.add(nbEcheancesParameter);
 

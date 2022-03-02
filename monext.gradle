@@ -32,14 +32,16 @@ publishing {
     }
     repositories {
         maven {
-            if (project.version.endsWith('-SNAPSHOT')) {
-                url nexusSnapshotUrl
-            } else {
-                url nexusPublicUrl
-            }
-            credentials {
-                username mavenUser
-                password mavenPassword
+            afterEvaluate {
+                if (project.version.endsWith('-SNAPSHOT')) {
+                    url "https://nexus.intra.monext.fr:10130/nexus/content/repositories/jindus-repo-pay-pay-snapshot/"
+                } else {
+                    url "https://nexus.intra.monext.fr:10130/nexus/content/repositories/jindus-repo-pay-pay-public/"
+                }
+                credentials {
+                    username mavenUser
+                    password mavenPassword
+                }
             }
         }
     }

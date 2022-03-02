@@ -32,14 +32,16 @@ publishing {
     }
     repositories {
         maven {
-            if (project.version.endsWith('-SNAPSHOT')) {
-                url nexusSnapshotUrl
-            } else {
-                url nexusPublicUrl
-            }
-            credentials {
-                username mavenUser
-                password mavenPassword
+            afterEvaluate {
+                if (project.version.endsWith('-SNAPSHOT')) {
+                    url nexusSnapshotUrl
+                } else {
+                    url nexusPublicUrl
+                }
+                credentials {
+                    username mavenUser
+                    password mavenPassword
+                }
             }
         }
     }
